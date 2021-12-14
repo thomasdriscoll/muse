@@ -1,0 +1,106 @@
+openapi: 3.0.3
+info:
+  title: Muse
+  version: v1
+servers:
+  - url: 'http://localhost:8018'
+    description: 
+paths:
+  '/user':
+    post:  
+      - user-controller
+    operationId: getUser
+    parameters:
+      - name: userId
+        in: query 
+        required: true
+        schema:
+          $ref: '#/components/schemas/UserRequest' 
+    responses:
+      '200':
+        description: OK
+        content: 
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/UserResponse'
+  '/user/{userId}':
+    get:
+      tags:
+        - user-controller
+      operationId: getUser
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content: 
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+  '/user/{userId}/savedStories':
+    get:
+      tags:
+        - user-controller
+      operationId: getSavedStoriesByUser
+components:
+  schemas:
+    Story:
+      type: object
+      properties:
+        storyId:
+          type: number
+          format: uint64
+        title:
+          type: string
+          example: "The Lion and the Mouse"
+        author:
+          type: string
+          example: "Aesop"
+        summary:
+          type: string
+          example: "A lion and a mouse have conflict"
+        content:
+          type: string
+          description: markdown
+          example: "A lion was sleeping in his lair when a mouse, not knowing where he was going ..."
+    StoryMeta:
+      type: object
+      properties:
+        storyId:
+          type: number
+          format: uint64
+        author:
+
+    User:
+      type: object
+      properties:
+        firstName:
+          type: string
+          example: "Thomas"
+        lastName:
+          type: string
+          example: "Driscoll"
+        email:
+          type: string
+          example: "fakeemail123@gmail.com"
+        password:
+          type: string
+          format: password
+          example: "encrypted"
+    UserRequest:
+      type: object
+      properties:
+        userRequest:
+          $ref: '#/components/schemas/User'
+    UserResponse:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        data:
+          $ref: '#/components/schemas/User'
