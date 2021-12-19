@@ -1,0 +1,189 @@
+openapi: 3.0.1
+info: 
+  title: Muse API
+  version: v0
+  description: A prototype to implement CRUD functionality for a short story app
+servers:
+  - url: TBD
+paths:
+  '/story':
+    get:
+      tags:
+        - story-controller
+      operationId: getRandomStory 
+      summary: Gets a random story 
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/StoryResponse'
+    post:
+      tags:
+        - story-controller
+      operationId: createStory
+      summary: Creates a story for the DB
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/StoryRequest' 
+      responses:
+        '201':
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/StoryResponse'
+  '/story/{id}':  
+    get:
+      tags:
+        - story-controller
+      operationId: getStoryById
+      summary: Gets a story by ID
+      parameters:
+        - name: id
+          in: path
+          description: Author ID, part of story metadata
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/StoryResponse'
+    put:
+      tags:
+        - story-controller
+      operationId: updateStory 
+      summary: Update a story by ID
+      parameters:
+        - name: id
+          in: path
+          description: Author ID, part of story metadata
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Updated 
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/StoryResponse'
+    delete:
+      tags:
+        - story-controller
+      operationId: deleteStory 
+      summary: Deletes a story
+      parameters:
+        - name: id
+          in: path
+          description: Author ID, part of story metadata
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Deleted 
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DeleteStoryResponse'
+
+  '/story/tag/{tag}':
+    get:
+      tags:
+        - story-controller
+      operationId: getStoryById
+      summary: Gets 10 stories by tag
+      parameters:
+        - name: tag 
+          in: path
+          description: string name of associated tag
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/StoriesResponse'
+
+  '/story/authors/{authorId}':
+    get:
+      tags:
+        - story-controller
+      operationId: getStoriesByAuthor
+      summary: Gets 10 stories by author
+      parameters:
+        - name: tag 
+          in: path
+          description: authorId included in story metadata
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/StoriesResponse'
+
+components:
+  schemas:
+    StoriesResponse:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        stories:
+          type: array
+          items:
+            $ref: '#/components/schemas/Story'
+    Story:
+      type: string 
+    StoryMetadata:
+      type: object
+      properties:
+        author:
+          type: string
+        authorId:
+          type: string
+        dateCreated:
+          type: timestamp
+        dateUpdated:
+          type: timestamp
+        description:
+          type: string
+        storyId:
+          type: string
+        storyTitle:
+          type: string
+    StoryRequest:
+      type: object
+      properties:
+        author:
+          type: string
+        authorId:
+          type: string
+        content:
+          type: string
+        title:
+          type: string
+    StoryResponse:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        story:
+          $ref: '#/components/schemas/Story'
