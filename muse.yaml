@@ -137,6 +137,47 @@ paths:
               schema:
                 $ref: '#/components/schemas/StoriesResponse'
 
+  '/user':
+    post:  
+      - user-controller
+    operationId: getUser
+    parameters:
+      - name: userId
+        in: query 
+        required: true
+        schema:
+          $ref: '#/components/schemas/UserRequest' 
+    responses:
+      '200':
+        description: OK
+        content: 
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/UserResponse'
+  '/user/{userId}':
+    get:
+      tags:
+        - user-controller
+      operationId: getUser
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content: 
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+  '/user/{userId}/savedStories':
+    get:
+      tags:
+        - user-controller
+      operationId: getSavedStoriesByUser
+
 components:
   schemas:
     StoriesResponse:
@@ -187,3 +228,32 @@ components:
           format: int32
         story:
           $ref: '#/components/schemas/Story'
+    User:
+      type: object
+      properties:
+        firstName:
+          type: string
+          example: "Thomas"
+        lastName:
+          type: string
+          example: "Driscoll"
+        email:
+          type: string
+          example: "fakeemail123@gmail.com"
+        password:
+          type: string
+          format: password
+          example: "encrypted"
+    UserRequest:
+      type: object
+      properties:
+        userRequest:
+          $ref: '#/components/schemas/User'
+    UserResponse:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        data:
+          $ref: '#/components/schemas/User'
