@@ -140,7 +140,7 @@ paths:
   '/user':
     post:  
       - user-controller
-    operationId: getUser
+    operationId: createUser
     parameters:
       - name: userId
         in: query 
@@ -148,8 +148,8 @@ paths:
         schema:
           $ref: '#/components/schemas/UserRequest' 
     responses:
-      '200':
-        description: OK
+      '201':
+        description: Created
         content: 
           '*/*':
             schema:
@@ -192,6 +192,7 @@ components:
             $ref: '#/components/schemas/Story'
     Story:
       type: string 
+      description: HTML text of story
     StoryMetadata:
       type: object
       properties:

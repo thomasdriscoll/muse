@@ -13,15 +13,19 @@ type App struct {
 	Router *mux.Router
 }
 
+// All initialization logic here
 func (a *App) initialize() {
 	a.Router = mux.NewRouter()
 	a.initializeRoutes()
 }
 
+// Add each controller here
 func (a *App) initializeRoutes() {
-	a.Router.HandleFunc("/users", a.getUsers).Methods("GET")
+	StoryRouteHandler(a.Router)
+	UserRouteHandler(a.Router)
 }
 
+// All run logic here
 func (a *App) run(addr string) {
 	log.Fatal(http.ListenAndServe(addr, a.Router))
 }
