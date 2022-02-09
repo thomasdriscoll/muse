@@ -1,17 +1,48 @@
 package main
 
-import "github.com/gorilla/mux"
+import (
+	"github.com/gin-gonic/gin"
+)
 
 type StoryController struct {
 }
 
-func StoryRouteHandler(r *mux.Router) {
-	subrouter := r.PathPrefix("/story").Subrouter()
-	subrouter.HandleFunc("/", getRandomStory).Methods("GET")
-	subrouter.HandleFunc("/", createStory).Methods("POST")
-	subrouter.HandleFunc("/{id}", getStoryById).Methods("GET")
-	subrouter.HandleFunc("/{id}", updateStory).Methods("PUT")
-	subrouter.HandleFunc("/{id}", deleteStory).Methods("DELETE")
-	subrouter.HandleFunc("/authors/{authorId}", getStoriesByAuthor).Methods("GET")
-	subrouter.HandleFunc("/tag/{tag}", getStoryById).Methods("GET")
+func (*gin.Engine) StoryRouteHandler(rg *gin.RouterGroup) {
+	story := rg.Group("/story")
+
+	story.GET("/", getRandomStory)
+	story.POST("/", createStory)
+	story.GET("/:id", getStoryById)
+	story.PUT("/:id", updateStory)
+	story.DELETE("/:id", deleteStory)
+	story.GET("/authors/:authorId", getStoriesByAuthor)
+	story.GET("/tag/:tag", getStoryById)
+}
+
+func getRandomStory(c *gin.Context) {
+	TODO()
+}
+
+func createStory(c *gin.Context) {
+	TODO()
+}
+
+func getStoryByIdStory(c *gin.Context) {
+	TODO()
+}
+
+func updateStory(c *gin.Context) {
+	TODO()
+}
+
+func deleteStory(c *gin.Context) {
+	TODO()
+}
+
+func getStoriesByAuthor(c *gin.Context) {
+	TODO()
+}
+
+func getStoryById(c *gin.Context) {
+	TODO()
 }

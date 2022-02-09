@@ -1,13 +1,28 @@
 package main
 
-import "github.com/gorilla/mux"
+import (
+	"github.com/gin-gonic/gin"
+)
 
 type UserController struct {
 }
 
-func UserRouteHandler(r *mux.Router) {
-	subrouter := r.PathPrefix("/user").Subrouter()
-	subrouter.HandleFunc("/", getUser).Methods("POST")
-	subrouter.HandleFunc("/{userId}", createUser).Methods("GET")
-	subrouter.HandleFunc("/{userId}/savedStories", getSavedStoriesByUser).Methods("GET")
+func (*gin.Engine) UserRouteHandler(rg *gin.RouterGroup) {
+	user := rg.Group("/user")
+
+	user.GET("/", getUser)
+	user.POST("/{userId}", createUser)
+	user.GET("/{userId}/savedStories", getSavedStoriesByUser)
+}
+
+func getUser(c *gin.Context) {
+	TODO()
+}
+
+func createUser(c *gin.Context) {
+	TODO()
+}
+
+func getSavedStoriesByUser(c *gin.Context) {
+	TODO()
 }

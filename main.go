@@ -2,37 +2,29 @@ package main
 
 import (
 	"database/sql"
-	"log"
-	"net/http"
 
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 )
 
 type App struct {
 	DB     *sql.DB
-	Router *mux.Router
-}
-
-// All initialization logic here
-func (a *App) initialize() {
-	a.Router = mux.NewRouter()
-	a.initializeRoutes()
+	Router *gin.Engine
 }
 
 // Add each controller here
 func (a *App) initializeRoutes() {
-	StoryRouteHandler(a.Router)
-	UserRouteHandler(a.Router)
-}
+	storyPrefix := a.Router.Group("/story")
+	a.Router.StoryRouteHandler(storyPrefix)
 
-// All run logic here
-func (a *App) run(addr string) {
-	log.Fatal(http.ListenAndServe(addr, a.Router))
+	userPrefix := a.Router.Group("/user")
+	a.Router.UserRouteHandler(userPrefix)
 }
 
 func main() {
-	app := App{}
-	app.initialize()
+	app := App{
+		Router: gin.Default(),
+	}
+	app.initializeRoutes()
 
-	app.run(":8080")
+	app.Router.Run()
 }
