@@ -1,48 +1,38 @@
-package main
+package controllers
 
 import (
 	"github.com/gin-gonic/gin"
 )
 
-type StoryController struct {
+type StoryController interface {
 }
 
-func (*gin.Engine) StoryRouteHandler(rg *gin.RouterGroup) {
-	story := rg.Group("/story")
-
-	story.GET("/", getRandomStory)
-	story.POST("/", createStory)
-	story.GET("/:id", getStoryById)
-	story.PUT("/:id", updateStory)
-	story.DELETE("/:id", deleteStory)
-	story.GET("/authors/:authorId", getStoriesByAuthor)
-	story.GET("/tag/:tag", getStoryById)
+func StoryRouteHandler(story *gin.RouterGroup) {
+	story.GET("/", GetRandomStory)
+	story.POST("/", CreateStory)
+	story.GET("/:id", GetStoryById)
+	story.PUT("/:id", UpdateStory)
+	story.DELETE("/:id", DeleteStory)
+	story.GET("/authors/:authorId", GetStoriesByAuthor)
+	story.GET("/tag/:tag", GetStoryById)
 }
 
-func getRandomStory(c *gin.Context) {
-	TODO()
+func (sc *StoryController) GetRandomStory(c *gin.Context) {
+	c.JSON(200, "pong")
 }
 
-func createStory(c *gin.Context) {
-	TODO()
+func (sc *StoryController) CreateStory(c *gin.Context) {
 }
 
-func getStoryByIdStory(c *gin.Context) {
-	TODO()
+func (sc *StoryController) GetStoryById(c *gin.Context) {
+
 }
 
-func updateStory(c *gin.Context) {
-	TODO()
+func (sc *StoryController) UpdateStory(c *gin.Context) {
 }
 
-func deleteStory(c *gin.Context) {
-	TODO()
+func (sc *StoryController) DeleteStory(c *gin.Context) {
 }
 
-func getStoriesByAuthor(c *gin.Context) {
-	TODO()
-}
-
-func getStoryById(c *gin.Context) {
-	TODO()
+func (sc *StoryController) GetStoriesByAuthor(c *gin.Context) {
 }

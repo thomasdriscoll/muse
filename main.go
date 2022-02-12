@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/gin-gonic/gin"
+	"github.com/thomasdriscoll/muse/controllers"
 )
 
 type App struct {
@@ -11,20 +12,27 @@ type App struct {
 	Router *gin.Engine
 }
 
-// Add each controller here
-func (a *App) initializeRoutes() {
-	storyPrefix := a.Router.Group("/story")
-	a.Router.StoryRouteHandler(storyPrefix)
+// Router setup
+func setupRouter() *gin.Engine {
+	r := gin.Default()
+	initializeRoutes(r)
+	return r
+}
 
-	userPrefix := a.Router.Group("/user")
-	a.Router.UserRouteHandler(userPrefix)
+// Add each controller here
+func initializeRoutes(r *gin.Engine) {
+	storyPrefix := r.Group("/story")
+	controllers.StoryRouteHandler(storyPrefix)
+
+	userPrefix := r.Group("/user")
+	controllers.UserRouteHandler(userPrefix)
 }
 
 func main() {
 	app := App{
-		Router: gin.Default(),
+		Router: setupRouter(),
+		DB:     nil,
 	}
-	app.initializeRoutes()
 
 	app.Router.Run()
 }

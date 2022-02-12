@@ -1,4 +1,4 @@
-package main
+package controllers
 
 import (
 	"github.com/gin-gonic/gin"
@@ -7,22 +7,11 @@ import (
 type UserController struct {
 }
 
-func (*gin.Engine) UserRouteHandler(rg *gin.RouterGroup) {
-	user := rg.Group("/user")
-
-	user.GET("/", getUser)
-	user.POST("/{userId}", createUser)
-	user.GET("/{userId}/savedStories", getSavedStoriesByUser)
+func (uc *UserController) GetUser(c *gin.Context) {
 }
 
-func getUser(c *gin.Context) {
-	TODO()
+func (uc *UserController) CreateUser(c *gin.Context) {
 }
 
-func createUser(c *gin.Context) {
-	TODO()
-}
-
-func getSavedStoriesByUser(c *gin.Context) {
-	TODO()
+func (uc *UserController) GetSavedStoriesByUser(c *gin.Context) {
 }
