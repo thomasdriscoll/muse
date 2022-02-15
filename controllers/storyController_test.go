@@ -6,13 +6,16 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/assert/v2"
 )
 
 // Global variables
 var storyId = 1 // 1 until I have something better
+var storyController StoryController
 
 func TestGetStory(t *testing.T) {
 	// We can create the expected responses as an array of structs
+	storyController := StoryControllerImpl{}
 	testCases := []struct {
 		writer               *httptest.ResponseRecorder
 		expectedResponseCode int
@@ -22,27 +25,29 @@ func TestGetStory(t *testing.T) {
 		{
 			writer:               httptest.NewRecorder(),
 			expectedResponseCode: http.StatusOK,
-			expectedResponseBody: []byte("pong"),
-			testMessage:          "Happy path for StoryController.getStory",
+			expectedResponseBody: []byte("\"pong\""),
+			testMessage:          "Happy path for StoryController.GetStory",
 		},
 		{
 			writer:               httptest.NewRecorder(),
 			expectedResponseCode: http.StatusNotFound,
 			expectedResponseBody: []byte("you done goofed kid"),
-			testMessage:          "Story not found for StoryController.getStory",
+			testMessage:          "Story not found for StoryController.GetStory",
 		},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.testMessage, func(t *testing.T) {
 			context, _ := gin.CreateTestContext(testCase.writer)
-			getRandomStory(context)
+			storyController.GetRandomStory(context)
 			// assertions
+			assert.Equal(t, testCase.expectedResponseBody, testCase.writer.Body.Bytes())
 		})
 	}
 }
 
 func TestCreateStory(t *testing.T) {
+	storyController := StoryControllerImpl{}
 	testCases := []struct {
 		writer               *httptest.ResponseRecorder
 		expectedResponseCode int
@@ -53,26 +58,26 @@ func TestCreateStory(t *testing.T) {
 			writer:               httptest.NewRecorder(),
 			expectedResponseCode: http.StatusOK,
 			expectedResponseBody: []byte("pong"),
-			testMessage:          "Happy path for StoryController.createStory",
+			testMessage:          "Happy path for StoryController.CreateStory",
 		},
 		{
 			writer:               httptest.NewRecorder(),
 			expectedResponseCode: http.StatusNotFound,
 			expectedResponseBody: []byte("you done goofed kid"),
-			testMessage:          "Story not found for StoryController.createStory",
+			testMessage:          "Story not found for StoryController.CreateStory",
 		},
 		{
 			writer:               httptest.NewRecorder(),
 			expectedResponseCode: http.StatusBadRequest,
 			expectedResponseBody: []byte("you done goofed kid"),
-			testMessage:          "Story request not valid for StoryController.createStory",
+			testMessage:          "Story request not valid for StoryController.CreateStory",
 		},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.testMessage, func(t *testing.T) {
 			context, _ := gin.CreateTestContext(testCase.writer)
-			createStory(context)
+			storyController.CreateStory(context)
 			// assertions
 
 		})
@@ -81,6 +86,7 @@ func TestCreateStory(t *testing.T) {
 }
 
 func TestGetStoryById(t *testing.T) {
+	storyController := StoryControllerImpl{}
 	testCases := []struct {
 		writer               *httptest.ResponseRecorder
 		expectedResponseCode int
@@ -91,20 +97,20 @@ func TestGetStoryById(t *testing.T) {
 			writer:               httptest.NewRecorder(),
 			expectedResponseCode: http.StatusOK,
 			expectedResponseBody: []byte("pong"),
-			testMessage:          "Happy path for StoryController.getStoryById",
+			testMessage:          "Happy path for StoryController.GetStoryById",
 		},
 		{
 			writer:               httptest.NewRecorder(),
 			expectedResponseCode: http.StatusNotFound,
 			expectedResponseBody: []byte("you done goofed kid"),
-			testMessage:          "Story not found for StoryController.getStoryById",
+			testMessage:          "Story not found for StoryController.GetStoryById",
 		},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.testMessage, func(t *testing.T) {
 			context, _ := gin.CreateTestContext(testCase.writer)
-			getStoryById(context)
+			storyController.GetStoryById(context)
 			// assertions
 
 		})
@@ -112,8 +118,9 @@ func TestGetStoryById(t *testing.T) {
 
 }
 
-// updateStory tests
+// UpdateStory tests
 func TestUpdateStory(t *testing.T) {
+	storyController := StoryControllerImpl{}
 	testCases := []struct {
 		writer               *httptest.ResponseRecorder
 		expectedResponseCode int
@@ -124,20 +131,20 @@ func TestUpdateStory(t *testing.T) {
 			writer:               httptest.NewRecorder(),
 			expectedResponseCode: http.StatusCreated,
 			expectedResponseBody: []byte("pong"),
-			testMessage:          "Happy path for StoryController.updateStory",
+			testMessage:          "Happy path for StoryController.UpdateStory",
 		},
 		{
 			writer:               httptest.NewRecorder(),
 			expectedResponseCode: http.StatusNotFound,
 			expectedResponseBody: []byte("you done goofed kid"),
-			testMessage:          "Story not found for StoryController.updateStory",
+			testMessage:          "Story not found for StoryController.UpdateStory",
 		},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.testMessage, func(t *testing.T) {
 			context, _ := gin.CreateTestContext(testCase.writer)
-			updateStory(context)
+			storyController.UpdateStory(context)
 			// assertions
 
 		})
@@ -146,6 +153,7 @@ func TestUpdateStory(t *testing.T) {
 
 // deleteStory tests
 func TestDeleteStory(t *testing.T) {
+	storyController := StoryControllerImpl{}
 	testCases := []struct {
 		writer               *httptest.ResponseRecorder
 		expectedResponseCode int
@@ -169,7 +177,7 @@ func TestDeleteStory(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.testMessage, func(t *testing.T) {
 			context, _ := gin.CreateTestContext(testCase.writer)
-			deleteStory(context)
+			storyController.DeleteStory(context)
 			// assertions
 
 		})
@@ -178,6 +186,7 @@ func TestDeleteStory(t *testing.T) {
 
 func TestGetStoriesByAuthor(t *testing.T) {
 	// We can create the expected responses as an array of structs
+	storyController := StoryControllerImpl{}
 	testCases := []struct {
 		writer               *httptest.ResponseRecorder
 		expectedResponseCode int
@@ -188,20 +197,20 @@ func TestGetStoriesByAuthor(t *testing.T) {
 			writer:               httptest.NewRecorder(),
 			expectedResponseCode: http.StatusOK,
 			expectedResponseBody: []byte("pong"),
-			testMessage:          "Happy path for StoryController.getStory",
+			testMessage:          "Happy path for StoryController.GetStory",
 		},
 		{
 			writer:               httptest.NewRecorder(),
 			expectedResponseCode: http.StatusNotFound,
 			expectedResponseBody: []byte("you done goofed kid"),
-			testMessage:          "Story not found for StoryController.getStory",
+			testMessage:          "Story not found for StoryController.GetStory",
 		},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.testMessage, func(t *testing.T) {
 			context, _ := gin.CreateTestContext(testCase.writer)
-			getStoriesByAuthor(context)
+			storyController.GetStoriesByAuthor(context)
 			// assertions
 
 		})

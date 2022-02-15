@@ -4,14 +4,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type UserController struct {
+type UserController interface {
+	GetUser(c *gin.Context)
+	CreateUser(c *gin.Context)
+	GetSavedStoriesByUser(c *gin.Context)
 }
 
-func (uc *UserController) GetUser(c *gin.Context) {
+type UserControllerImpl struct{}
+
+func (uc UserControllerImpl) GetUser(c *gin.Context) {
 }
 
-func (uc *UserController) CreateUser(c *gin.Context) {
+func (uc UserControllerImpl) CreateUser(c *gin.Context) {
 }
 
-func (uc *UserController) GetSavedStoriesByUser(c *gin.Context) {
+func (uc UserControllerImpl) GetSavedStoriesByUser(c *gin.Context) {
 }

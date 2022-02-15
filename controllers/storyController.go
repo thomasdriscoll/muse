@@ -4,35 +4,34 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Potential tech debt -- abstract every controller to share interface, too complicated for now (for me)
 type StoryController interface {
+	GetRandomStory(c *gin.Context)
+	CreateStory(c *gin.Context)
+	GetStoryById(c *gin.Context)
+	UpdateStory(c *gin.Context)
+	DeleteStory(c *gin.Context)
+	GetStoriesByAuthor(c *gin.Context)
 }
 
-func StoryRouteHandler(story *gin.RouterGroup) {
-	story.GET("/", GetRandomStory)
-	story.POST("/", CreateStory)
-	story.GET("/:id", GetStoryById)
-	story.PUT("/:id", UpdateStory)
-	story.DELETE("/:id", DeleteStory)
-	story.GET("/authors/:authorId", GetStoriesByAuthor)
-	story.GET("/tag/:tag", GetStoryById)
-}
+type StoryControllerImpl struct{}
 
-func (sc *StoryController) GetRandomStory(c *gin.Context) {
+func (sc StoryControllerImpl) GetRandomStory(c *gin.Context) {
 	c.JSON(200, "pong")
 }
 
-func (sc *StoryController) CreateStory(c *gin.Context) {
+func (sc StoryControllerImpl) CreateStory(c *gin.Context) {
 }
 
-func (sc *StoryController) GetStoryById(c *gin.Context) {
+func (sc StoryControllerImpl) GetStoryById(c *gin.Context) {
 
 }
 
-func (sc *StoryController) UpdateStory(c *gin.Context) {
+func (sc StoryControllerImpl) UpdateStory(c *gin.Context) {
 }
 
-func (sc *StoryController) DeleteStory(c *gin.Context) {
+func (sc StoryControllerImpl) DeleteStory(c *gin.Context) {
 }
 
-func (sc *StoryController) GetStoriesByAuthor(c *gin.Context) {
+func (sc StoryControllerImpl) GetStoriesByAuthor(c *gin.Context) {
 }

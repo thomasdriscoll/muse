@@ -22,10 +22,12 @@ func setupRouter() *gin.Engine {
 // Add each controller here
 func initializeRoutes(r *gin.Engine) {
 	storyPrefix := r.Group("/story")
-	controllers.StoryRouteHandler(storyPrefix)
+	storyController := controllers.StoryControllerImpl{}
+	StoryRouteHandler(storyPrefix, storyController)
 
 	userPrefix := r.Group("/user")
-	controllers.UserRouteHandler(userPrefix)
+	userController := controllers.UserControllerImpl{}
+	UserRouteHandler(userPrefix, userController)
 }
 
 func main() {
