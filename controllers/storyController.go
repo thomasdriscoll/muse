@@ -12,6 +12,7 @@ type StoryController interface {
 	UpdateStory(c *gin.Context)
 	DeleteStory(c *gin.Context)
 	GetStoriesByAuthor(c *gin.Context)
+	GetStoriesByTag(c *gin.Context)
 }
 
 type StoryControllerImpl struct{}
@@ -24,7 +25,7 @@ func (sc StoryControllerImpl) CreateStory(c *gin.Context) {
 }
 
 func (sc StoryControllerImpl) GetStoryById(c *gin.Context) {
-
+	c.JSON(200, "testing")
 }
 
 func (sc StoryControllerImpl) UpdateStory(c *gin.Context) {
@@ -34,4 +35,8 @@ func (sc StoryControllerImpl) DeleteStory(c *gin.Context) {
 }
 
 func (sc StoryControllerImpl) GetStoriesByAuthor(c *gin.Context) {
+
+}
+
+func (sc StoryControllerImpl) GetStoriesByTag(c *gin.Context) {
 }

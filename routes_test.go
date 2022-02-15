@@ -25,11 +25,12 @@ func TestStoryRouteHandler(t *testing.T) {
 	// NOTE: Two return values meant they couldn't be inline in the testCases slice
 	getRandomStoryRequest, _ := http.NewRequest(http.MethodGet, routePrefix, nil)
 	createStoryRequest, _ := http.NewRequest(http.MethodPost, routePrefix, nil) // add Story model here
-	getStoryByIdRequest, _ := http.NewRequest(http.MethodGet, routePrefix+"/"+strconv.Itoa(storyId), nil)
-	updateStoryRequest, _ := http.NewRequest(http.MethodPut, routePrefix+"/"+strconv.Itoa(storyId), nil)
-	deleteStoryRequest, _ := http.NewRequest(http.MethodDelete, routePrefix+"/"+strconv.Itoa(storyId), nil)
+	getStoryByIdRequest, _ := http.NewRequest(http.MethodGet, routePrefix+"/storyId/"+strconv.Itoa(storyId), nil)
+	updateStoryRequest, _ := http.NewRequest(http.MethodPut, routePrefix+"/storyId/"+strconv.Itoa(storyId), nil)
+	deleteStoryRequest, _ := http.NewRequest(http.MethodDelete, routePrefix+"/storyId/"+strconv.Itoa(storyId), nil)
 	getStoryByAuthorRequest, _ := http.NewRequest(http.MethodGet, routePrefix+"/authors/"+strconv.Itoa(authorId), nil)
-	getStoriesByTagRequest, _ := http.NewRequest(http.MethodGet, routePrefix+"/"+tagId, nil)
+	getStoriesByTagRequest, _ := http.NewRequest(http.MethodGet, routePrefix+"/tag/"+tagId, nil)
+	junkRequest, _ := http.NewRequest(http.MethodGet, routePrefix+"/junk", nil)
 
 	// mocks
 	mockStoryController := MockStoryController{}
@@ -52,28 +53,28 @@ func TestStoryRouteHandler(t *testing.T) {
 			writer:               httptest.NewRecorder(),
 			request:              getRandomStoryRequest,
 			expectedResponseCode: 200,
-			expectedResponseBody: []byte("\"works\""),
+			expectedResponseBody: []byte("\"Get Random Story works\""),
 			testMessage:          "GET /story route",
 		},
 		{
 			writer:               httptest.NewRecorder(),
 			request:              createStoryRequest,
 			expectedResponseCode: 201,
-			expectedResponseBody: []byte("\"works\""),
+			expectedResponseBody: []byte("\"Create Story works\""),
 			testMessage:          "POST /story route",
 		},
 		{
 			writer:               httptest.NewRecorder(),
 			request:              getStoryByIdRequest,
 			expectedResponseCode: 200,
-			expectedResponseBody: []byte("\"works\""),
+			expectedResponseBody: []byte("\"Get Story By Id works\""),
 			testMessage:          "GET /story/:id route",
 		},
 		{
 			writer:               httptest.NewRecorder(),
 			request:              updateStoryRequest,
 			expectedResponseCode: 201,
-			expectedResponseBody: []byte("\"works\""),
+			expectedResponseBody: []byte("\"Update Story works\""),
 			testMessage:          "PUT /story/:id route",
 		},
 		{
@@ -87,15 +88,22 @@ func TestStoryRouteHandler(t *testing.T) {
 			writer:               httptest.NewRecorder(),
 			request:              getStoryByAuthorRequest,
 			expectedResponseCode: 200,
-			expectedResponseBody: []byte("\"works\""),
+			expectedResponseBody: []byte("\"Get Stories By Author works\""),
 			testMessage:          "GET /story/authors/:authorId route",
 		},
 		{
 			writer:               httptest.NewRecorder(),
 			request:              getStoriesByTagRequest,
 			expectedResponseCode: 200,
-			expectedResponseBody: []byte("\"works\""),
+			expectedResponseBody: []byte("\"Get Stories By Tag works\""),
 			testMessage:          "GET /story/tag/:tagId route",
+		},
+		{
+			writer:               httptest.NewRecorder(),
+			request:              junkRequest,
+			expectedResponseCode: 404,
+			expectedResponseBody: []byte("404 page not found"),
+			testMessage:          "404 on /story/junk to make sure no false positives",
 		},
 	}
 
@@ -120,8 +128,9 @@ func TestUserRouteHandler(t *testing.T) {
 
 	// requests
 	createUserRequest, _ := http.NewRequest(http.MethodPost, routePrefix, nil) // Add User Context here
-	getUserRequest, _ := http.NewRequest(http.MethodGet, routePrefix+"/"+strconv.Itoa(userId), nil)
-	getSavedStoriesByUserRequest, _ := http.NewRequest(http.MethodGet, routePrefix+"/"+strconv.Itoa(userId)+"/savedStories", nil)
+	getUserRequest, _ := http.NewRequest(http.MethodGet, routePrefix+"/userId/"+strconv.Itoa(userId), nil)
+	getSavedStoriesByUserRequest, _ := http.NewRequest(http.MethodGet, routePrefix+"/userId/savedStories"+strconv.Itoa(userId), nil)
+	junkRequest, _ := http.NewRequest(http.MethodGet, routePrefix+"/junk", nil)
 
 	// mocks
 	mockUserController := MockUserController{}
@@ -161,6 +170,13 @@ func TestUserRouteHandler(t *testing.T) {
 			expectedResponseBody: []byte("\"works\""),
 			testMessage:          "GET /user/:userId/savedStories route",
 		},
+		{
+			writer:               httptest.NewRecorder(),
+			request:              junkRequest,
+			expectedResponseCode: 404,
+			expectedResponseBody: []byte("404 page not found"),
+			testMessage:          "GET /user/junk route",
+		},
 	}
 
 	// Run test suite
@@ -189,22 +205,22 @@ func TestBadRoutes(t *testing.T) {
 type MockStoryController struct{}
 
 func (msc MockStoryController) GetRandomStory(c *gin.Context) {
-	c.JSON(200, "works")
+	c.JSON(200, "Get Random Story works")
 
 }
 
 func (msc MockStoryController) CreateStory(c *gin.Context) {
-	c.JSON(201, "works")
+	c.JSON(201, "Create Story works")
 
 }
 
 func (msc MockStoryController) GetStoryById(c *gin.Context) {
-	c.JSON(200, "works")
+	c.JSON(200, "Get Story By Id works")
 
 }
 
 func (msc MockStoryController) UpdateStory(c *gin.Context) {
-	c.JSON(201, "works")
+	c.JSON(201, "Update Story works")
 
 }
 
@@ -214,8 +230,12 @@ func (msc MockStoryController) DeleteStory(c *gin.Context) {
 }
 
 func (msc MockStoryController) GetStoriesByAuthor(c *gin.Context) {
-	c.JSON(200, "works")
+	c.JSON(200, "Get Stories By Author works")
 
+}
+
+func (msc MockStoryController) GetStoriesByTag(c *gin.Context) {
+	c.JSON(200, "Get Stories By Tag works")
 }
 
 // UserController stubs

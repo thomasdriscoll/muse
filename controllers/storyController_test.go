@@ -18,6 +18,7 @@ func TestGetStory(t *testing.T) {
 	storyController := StoryControllerImpl{}
 	testCases := []struct {
 		writer               *httptest.ResponseRecorder
+		request              *http.Request
 		expectedResponseCode int
 		expectedResponseBody []byte
 		testMessage          string
