@@ -10,6 +10,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type TestCase struct {
+	writer               *httptest.ResponseRecorder
+	request              *http.Request
+	expectedResponseCode int
+	expectedResponseBody []byte
+	testMessage          string
+}
+
 /*
 This test validates each of my routes in StoryController and makes sure that a Gin engine would actually be able to reach them
 Mocks the handlers, those are tested in the controllers themselves
@@ -42,13 +50,7 @@ func TestStoryRouteHandler(t *testing.T) {
 	// Actual test
 	StoryRouteHandler(routeGroup, mockStoryController)
 
-	testCases := []struct {
-		writer               *httptest.ResponseRecorder
-		request              *http.Request
-		expectedResponseCode int
-		expectedResponseBody []byte
-		testMessage          string
-	}{
+	testCases := []TestCase{
 		{
 			writer:               httptest.NewRecorder(),
 			request:              getRandomStoryRequest,
@@ -142,13 +144,7 @@ func TestUserRouteHandler(t *testing.T) {
 	// Actual test
 	UserRouteHandler(routeGroup, mockUserController)
 
-	testCases := []struct {
-		writer               *httptest.ResponseRecorder
-		request              *http.Request
-		expectedResponseCode int
-		expectedResponseBody []byte
-		testMessage          string
-	}{
+	testCases := []TestCase{
 		{
 			writer:               httptest.NewRecorder(),
 			request:              createUserRequest,

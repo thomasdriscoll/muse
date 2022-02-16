@@ -1,5 +1,8 @@
-package main
+package models
 
-type Story string
+type Story struct {
+	Metadata StoryMetadata
+	Content  string
+}
 
 // Leave empty to leave story validation methods

@@ -1,4 +1,4 @@
-package main
+package models
 
 type StoryResponse struct {
 	status int32

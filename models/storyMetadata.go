@@ -1,4 +1,4 @@
-package main
+package models
 
 import "time"
 
@@ -17,7 +17,7 @@ func (smd *StoryMetadata) UpdateTime() time.Time {
 	return smd.dateUpdated
 }
 
-func (smd *StoryMetadata) CreatedTimeByDayMonthYear(day, month, year int) time.Time {
+/* func (smd *StoryMetadata) CreatedTimeByDayMonthYear(day, month, year int) time.Time {
 	smd.dateCreated = time.Date(year, month, day)
 	return smd.dateCreated
-}
+} */
