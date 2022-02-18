@@ -7,7 +7,8 @@ import (
 // Potential tech debt -- abstract every controller to share interface, too complicated for now (for me)
 type StoryController interface {
 	GetRandomStory(c *gin.Context)
-	CreateStory(c *gin.Context)
+	CreateStoryFromURL(c *gin.Context)
+	CreateStoryFromFile(c *gin.Context)
 	GetStoryById(c *gin.Context)
 	UpdateStory(c *gin.Context)
 	DeleteStory(c *gin.Context)

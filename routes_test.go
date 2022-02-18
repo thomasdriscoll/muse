@@ -32,7 +32,9 @@ func TestStoryRouteHandler(t *testing.T) {
 	// requests
 	// NOTE: Two return values meant they couldn't be inline in the testCases slice
 	getRandomStoryRequest, _ := http.NewRequest(http.MethodGet, routePrefix, nil)
-	createStoryRequest, _ := http.NewRequest(http.MethodPost, routePrefix, nil) // add Story model here
+	createStoryFromURLRequest, _ := http.NewRequest(http.MethodPost, routePrefix+"/createFromURL", nil)   // add CreateFromURL request here
+	createStoryFromFileRequest, _ := http.NewRequest(http.MethodPost, routePrefix+"/createFromFile", nil) // add CreateFromFile request here
+
 	getStoryByIdRequest, _ := http.NewRequest(http.MethodGet, routePrefix+"/storyId/"+strconv.Itoa(storyId), nil)
 	updateStoryRequest, _ := http.NewRequest(http.MethodPut, routePrefix+"/storyId/"+strconv.Itoa(storyId), nil)
 	deleteStoryRequest, _ := http.NewRequest(http.MethodDelete, routePrefix+"/storyId/"+strconv.Itoa(storyId), nil)
@@ -60,10 +62,17 @@ func TestStoryRouteHandler(t *testing.T) {
 		},
 		{
 			writer:               httptest.NewRecorder(),
-			request:              createStoryRequest,
+			request:              createStoryFromURLRequest,
 			expectedResponseCode: 201,
-			expectedResponseBody: []byte("\"Create Story works\""),
-			testMessage:          "POST /story route",
+			expectedResponseBody: []byte("\"Create Story From URL works\""),
+			testMessage:          "POST /story/createFromURL route",
+		},
+		{
+			writer:               httptest.NewRecorder(),
+			request:              createStoryFromFileRequest,
+			expectedResponseCode: 201,
+			expectedResponseBody: []byte("\"Create Story From File works\""),
+			testMessage:          "POST /story/createFromFile route",
 		},
 		{
 			writer:               httptest.NewRecorder(),
@@ -205,8 +214,13 @@ func (msc MockStoryController) GetRandomStory(c *gin.Context) {
 
 }
 
-func (msc MockStoryController) CreateStory(c *gin.Context) {
-	c.JSON(201, "Create Story works")
+func (msc MockStoryController) CreateStoryFromURL(c *gin.Context) {
+	c.JSON(201, "Create Story From URL works")
+
+}
+
+func (msc MockStoryController) CreateStoryFromFile(c *gin.Context) {
+	c.JSON(201, "Create Story From File works")
 
 }
 
