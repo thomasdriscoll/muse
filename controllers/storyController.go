@@ -21,7 +21,10 @@ func (sc StoryControllerImpl) GetRandomStory(c *gin.Context) {
 	c.JSON(200, "pong")
 }
 
-func (sc StoryControllerImpl) CreateStory(c *gin.Context) {
+func (sc StoryControllerImpl) CreateStoryFromURL(c *gin.Context) {
+}
+
+func (sc StoryControllerImpl) CreateStoryFromFile(c *gin.Context) {
 }
 
 func (sc StoryControllerImpl) GetStoryById(c *gin.Context) {

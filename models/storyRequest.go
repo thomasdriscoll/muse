@@ -1,8 +1,17 @@
 package models
 
-type StoryRequest struct {
+type StoryFromURLRequest struct {
 	author   string
 	authorId string
-	content  string
+	urlType  string
+	url      string
+	title    string
+}
+
+type StoryFromFileRequest struct {
+	author   string
+	authorId string
+	fileType string
+	file     File
 	title    string
 }

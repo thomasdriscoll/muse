@@ -19,16 +19,17 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/StoryResponse'
+  '/story/createFromURL':
     post:
       tags:
         - story-controller
-      operationId: createStory
+      operationId: createStoryFromURL
       summary: Creates a story for the DB
       requestBody:
         content:
           'application/json':
             schema:
-              $ref: '#/components/schemas/StoryRequest' 
+              $ref: '#/components/schemas/StoryFromURLRequest' 
       responses:
         '201':
           description: Created
@@ -36,7 +37,26 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/StoryResponse'
-  '/story/{id}':  
+  '/story/createFromFile':
+    post:
+      tags:
+        - story-controller
+      operationId: createStoryFromFile
+      summary: Creates a story for the DB
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/StoryFromRequest' 
+      responses:
+        '201':
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/StoryResponse'
+
+  '/story/storyId/{id}':  
     get:
       tags:
         - story-controller
@@ -210,15 +230,32 @@ components:
           type: string
         storyTitle:
           type: string
-    StoryRequest:
+    StoryFromURLRequest:
       type: object
       properties:
         author:
           type: string
         authorId:
           type: string
-        content:
+        urlType:
           type: string
+          summary: Types should be: Wikipedia, Article(specify later if needed)
+        url:
+          type: string
+        title:
+          type: string
+    StoryFromFileRequest:
+      type: object
+      properties:
+        author:
+          type: string
+        authorId:
+          type: string
+        fileType:
+          type: string
+          summary: Types should be: EPUB, worry about the rest later
+        file:
+          type: file
         title:
           type: string
     StoryResponse:

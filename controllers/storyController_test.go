@@ -14,6 +14,10 @@ import (
 // Global variables
 var storyId = 1 // 1 until I have something better
 var storyController StoryController
+var story = models.Story{
+	Metadata: models.StoryMetadata{},
+	Content:  "content",
+}
 
 type TestCase struct {
 	writer               *httptest.ResponseRecorder
@@ -26,19 +30,15 @@ type TestCase struct {
 func TestGetStory(t *testing.T) {
 	// Constants
 	route := "/story"
-	story := models.Story{
-		Metadata: models.StoryMetadata{},
-		Content:  "content",
-	}
 
 	//Mocks
 	storyController := StoryControllerImpl{}
 
 	// Requests & responses
-	getRandomStoryRequest, _ := http.NewRequest(http.MethodGet, route, nil) // Add User Context here
+	getRandomStoryRequest, _ := http.NewRequest(http.MethodGet, route, nil)
 	okResponse, _ := json.Marshal(story)
-	notFoundResponse, _ := json.Marshal("Story not found")
-	dbErrResponse, _ := json.Marshal("DB error")
+	notFoundResponse, _ := json.Marshal(enums.ErrorStoryNotFound)
+	dbErrResponse, _ := json.Marshal(enums.ErrorDBErr)
 
 	testCases := []TestCase{
 		{
@@ -74,34 +74,73 @@ func TestGetStory(t *testing.T) {
 	}
 }
 
-/*
-func TestCreateStory(t *testing.T) {
+func TestCreateStoryFromURL(t *testing.T) {
 	// Constants
-	route := "/story"
+	route := "/story/createFromURL"
 
 	//Mocks
 	storyController := StoryControllerImpl{}
 
 	// Requests
-	createRequest, _ := http.NewRequest(http.MethodPost, route, nil) // Add User Context here
+	createRequest, _ := http.NewRequest(http.MethodPost, route, story)
+	createResponse := json.Marshal(story)
 
 	testCases := []TestCase{
 		{
 			writer:               httptest.NewRecorder(),
 			request:              createRequest,
-			expectedResponseCode: http.StatusOK,
-			expectedResponseBody: []byte(okResponse),
-			testMessage:          "Happy path for StoryController.GetStory",
+			expectedResponseCode: http.StatusCreated,
+			expectedResponseBody: []byte(createResponse),
+			testMessage:          "Happy path for StoryController.CreateStory",
 		},
 		{
 			writer:               httptest.NewRecorder(),
-			request:              okRequest,
+			expectedResponseCode: http.StatusBadRequest,
+			expectedResponseBody: []byte(enums.ErrorInvalidURL),
+			testMessage:          "Test that InvalidURLs are rejected",
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.testMessage, func(t *testing.T) {
+			context, _ := gin.CreateTestContext(testCase.writer)
+			context.Request = testCase.request
+			storyController.CreateStory(context)
+			// assertions
+
+		})
+	}
+
+}
+
+func TestCreateStoryFromFile(t *testing.T) {
+	// Constants
+	route := "/story/createFromFile"
+
+	//Mocks
+	storyController := StoryControllerImpl{}
+
+	// Requests
+	createFromFileRequest, _ := http.NewRequest(http.MethodPost, route, story)
+
+	testCases := []TestCase{
+		{
+			writer:               httptest.NewRecorder(),
+			request:              createFromFileRequest,
+			expectedResponseCode: http.StatusCreated,
+			expectedResponseBody: []byte(okResponse),
+			testMessage:          "Happy path for StoryController.CreateStory",
+		},
+		{
+			writer:               httptest.NewRecorder(),
+			request:              createFromFileRequest,
 			expectedResponseCode: http.StatusNotFound,
 			expectedResponseBody: []byte("you done goofed kid"),
 			testMessage:          "Story not found for StoryController.CreateStory",
 		},
 		{
 			writer:               httptest.NewRecorder(),
+			request:              createFromFileRequest,
 			expectedResponseCode: http.StatusBadRequest,
 			expectedResponseBody: []byte("you done goofed kid"),
 			testMessage:          "Story request not valid for StoryController.CreateStory",
@@ -235,4 +274,4 @@ func TestGetStoriesByAuthor(t *testing.T) {
 
 		})
 	}
-}*/
+}
