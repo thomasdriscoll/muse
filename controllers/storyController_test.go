@@ -1,13 +1,15 @@
 package controllers
 
 import (
+	"bytes"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/assert/v2"
+	"github.com/thomasdriscoll/muse/enums"
 	"github.com/thomasdriscoll/muse/models"
 )
 
@@ -38,7 +40,7 @@ func TestGetStory(t *testing.T) {
 	getRandomStoryRequest, _ := http.NewRequest(http.MethodGet, route, nil)
 	okResponse, _ := json.Marshal(story)
 	notFoundResponse, _ := json.Marshal(enums.ErrorStoryNotFound)
-	dbErrResponse, _ := json.Marshal(enums.ErrorDBErr)
+	dbErrResponse, _ := json.Marshal(enums.ErrorDBError)
 
 	testCases := []TestCase{
 		{
@@ -69,7 +71,12 @@ func TestGetStory(t *testing.T) {
 			context, _ := gin.CreateTestContext(testCase.writer)
 			storyController.GetRandomStory(context)
 			// assertions
-			assert.Equal(t, testCase.expectedResponseBody, testCase.writer.Body.Bytes())
+			if testCase.expectedResponseCode != testCase.writer.Code {
+				t.Errorf("Response Code does not match expected status code")
+			}
+			if !bytes.Equal(testCase.expectedResponseBody, testCase.writer.Body.Bytes()) {
+				t.Errorf("Response body does not match expected response")
+			}
 		})
 	}
 }
@@ -82,8 +89,16 @@ func TestCreateStoryFromURL(t *testing.T) {
 	storyController := StoryControllerImpl{}
 
 	// Requests
-	createRequest, _ := http.NewRequest(http.MethodPost, route, story)
-	createResponse := json.Marshal(story)
+	storyFromURLRequestNoId := models.StoryFromURLRequest{
+		Author:   "Homer",
+		AuthorId: "",
+		UrlType:  "Gutenberg",
+		Url:      "https://www.gutenberg.org/files/2199/2199-h/2199-h.htm",
+	}
+	createRequest, _ := http.NewRequest(http.MethodPost, route, string.NewReader(storyFromURLRequestNoId))
+	createResponse, _ := json.Marshal(story)
+	invalidURLResponse, _ := json.Marshal(enums.ErrorInvalidURL)
+	dbErrorResponse, _ := json.Marshal(enums.ErrorDBError)
 
 	testCases := []TestCase{
 		{
@@ -91,13 +106,21 @@ func TestCreateStoryFromURL(t *testing.T) {
 			request:              createRequest,
 			expectedResponseCode: http.StatusCreated,
 			expectedResponseBody: []byte(createResponse),
-			testMessage:          "Happy path for StoryController.CreateStory",
+			testMessage:          "Happy path for StoryController.CreateStoryFromURL",
 		},
 		{
 			writer:               httptest.NewRecorder(),
+			request:              createRequest,
 			expectedResponseCode: http.StatusBadRequest,
-			expectedResponseBody: []byte(enums.ErrorInvalidURL),
+			expectedResponseBody: []byte(invalidURLResponse),
 			testMessage:          "Test that InvalidURLs are rejected",
+		},
+		{
+			writer:               httptest.NewRecorder(),
+			request:              createRequest,
+			expectedResponseCode: http.StatusServiceUnavailable,
+			expectedResponseBody: []byte(dbErrorResponse),
+			testMessage:          "Database error",
 		},
 	}
 
@@ -105,14 +128,20 @@ func TestCreateStoryFromURL(t *testing.T) {
 		t.Run(testCase.testMessage, func(t *testing.T) {
 			context, _ := gin.CreateTestContext(testCase.writer)
 			context.Request = testCase.request
-			storyController.CreateStory(context)
+			storyController.CreateStoryFromURL(context)
 			// assertions
-
+			if testCase.expectedResponseCode != testCase.writer.Code {
+				t.Errorf("Response Code does not match expected status code")
+			}
+			if !bytes.Equal(testCase.expectedResponseBody, testCase.writer.Body.Bytes()) {
+				t.Errorf("Response body does not match expected response")
+			}
 		})
 	}
 
 }
 
+/*
 func TestCreateStoryFromFile(t *testing.T) {
 	// Constants
 	route := "/story/createFromFile"
@@ -121,14 +150,15 @@ func TestCreateStoryFromFile(t *testing.T) {
 	storyController := StoryControllerImpl{}
 
 	// Requests
-	createFromFileRequest, _ := http.NewRequest(http.MethodPost, route, story)
+	createFromFileRequest, _ := http.NewRequest(http.MethodPost, route, nil)
+	createResponse, _ := json.Marshal(story)
 
 	testCases := []TestCase{
 		{
 			writer:               httptest.NewRecorder(),
 			request:              createFromFileRequest,
 			expectedResponseCode: http.StatusCreated,
-			expectedResponseBody: []byte(okResponse),
+			expectedResponseBody: []byte(createResponse),
 			testMessage:          "Happy path for StoryController.CreateStory",
 		},
 		{
@@ -151,28 +181,50 @@ func TestCreateStoryFromFile(t *testing.T) {
 		t.Run(testCase.testMessage, func(t *testing.T) {
 			context, _ := gin.CreateTestContext(testCase.writer)
 			context.Request = testCase.request
-			storyController.CreateStory(context)
+			storyController.CreateStoryFromFile(context)
 			// assertions
 
 		})
 	}
 
 }
+*/
 
 func TestGetStoryById(t *testing.T) {
+	// Constants
+	route := "/story/storyId/"
+	storyId := 1
+
+	//Mocks
 	storyController := StoryControllerImpl{}
+
+	// Requests & responses
+	getStoryByIdRequest, _ := http.NewRequest(http.MethodGet, route+strconv.Itoa(storyId), nil)
+	okResponse, _ := json.Marshal(story)
+	notFoundResponse, _ := json.Marshal(enums.ErrorStoryNotFound)
+	dbErrResponse, _ := json.Marshal(enums.ErrorDBError)
+
 	testCases := []TestCase{
 		{
 			writer:               httptest.NewRecorder(),
+			request:              getStoryByIdRequest,
 			expectedResponseCode: http.StatusOK,
-			expectedResponseBody: []byte("pong"),
+			expectedResponseBody: []byte(okResponse),
 			testMessage:          "Happy path for StoryController.GetStoryById",
 		},
 		{
 			writer:               httptest.NewRecorder(),
+			request:              getStoryByIdRequest,
 			expectedResponseCode: http.StatusNotFound,
-			expectedResponseBody: []byte("you done goofed kid"),
+			expectedResponseBody: []byte(notFoundResponse),
 			testMessage:          "Story not found for StoryController.GetStoryById",
+		},
+		{
+			writer:               httptest.NewRecorder(),
+			request:              getStoryByIdRequest,
+			expectedResponseCode: http.StatusServiceUnavailable,
+			expectedResponseBody: []byte(dbErrResponse),
+			testMessage:          "Database error",
 		},
 	}
 
@@ -181,12 +233,18 @@ func TestGetStoryById(t *testing.T) {
 			context, _ := gin.CreateTestContext(testCase.writer)
 			storyController.GetStoryById(context)
 			// assertions
-
+			if testCase.expectedResponseCode != testCase.writer.Code {
+				t.Errorf("Response Code does not match expected status code")
+			}
+			if !bytes.Equal(testCase.expectedResponseBody, testCase.writer.Body.Bytes()) {
+				t.Errorf("Response body does not match expected response")
+			}
 		})
 	}
 
 }
 
+/*
 // UpdateStory tests
 func TestUpdateStory(t *testing.T) {
 	storyController := StoryControllerImpl{}
@@ -214,22 +272,43 @@ func TestUpdateStory(t *testing.T) {
 		})
 	}
 }
+*/
 
 // deleteStory tests
 func TestDeleteStory(t *testing.T) {
+	// Constants
+	route := "/story/storyId/"
+	storyId := 1
+
+	//Mocks
 	storyController := StoryControllerImpl{}
+
+	// Requests & responses
+	deleteStoryByIdRequest, _ := http.NewRequest(http.MethodDelete, route+strconv.Itoa(storyId), nil)
+	notFoundResponse, _ := json.Marshal(enums.ErrorStoryNotFound)
+	dbErrResponse, _ := json.Marshal(enums.ErrorDBError)
+
 	testCases := []TestCase{
 		{
 			writer:               httptest.NewRecorder(),
+			request:              deleteStoryByIdRequest,
 			expectedResponseCode: http.StatusNoContent,
-			expectedResponseBody: []byte("pong"),
+			expectedResponseBody: []byte(""),
 			testMessage:          "Happy path for StoryController.deleteStory",
 		},
 		{
 			writer:               httptest.NewRecorder(),
+			request:              deleteStoryByIdRequest,
 			expectedResponseCode: http.StatusNotFound,
-			expectedResponseBody: []byte("you done goofed kid"),
+			expectedResponseBody: []byte(notFoundResponse),
 			testMessage:          "Story not found for StoryController.deleteStory",
+		},
+		{
+			writer:               httptest.NewRecorder(),
+			request:              deleteStoryByIdRequest,
+			expectedResponseCode: http.StatusServiceUnavailable,
+			expectedResponseBody: []byte(dbErrResponse),
+			testMessage:          "Database not available",
 		},
 	}
 
@@ -238,31 +317,52 @@ func TestDeleteStory(t *testing.T) {
 			context, _ := gin.CreateTestContext(testCase.writer)
 			storyController.DeleteStory(context)
 			// assertions
+			if testCase.expectedResponseCode != testCase.writer.Code {
+				t.Errorf("Response Code does not match expected status code")
+			}
+			if !bytes.Equal(testCase.expectedResponseBody, testCase.writer.Body.Bytes()) {
+				t.Errorf("Response body does not match expected response")
+			}
 
 		})
 	}
 }
 
 func TestGetStoriesByAuthor(t *testing.T) {
-	// We can create the expected responses as an array of structs
+	// Constants
+	route := "/story/authors/"
+	authorId := 1
+
+	//Mocks
 	storyController := StoryControllerImpl{}
-	testCases := []struct {
-		writer               *httptest.ResponseRecorder
-		expectedResponseCode int
-		expectedResponseBody []byte
-		testMessage          string
-	}{
+
+	// Requests & responses
+	getStoriesByAuthorRequest, _ := http.NewRequest(http.MethodGet, route+strconv.Itoa(authorId), nil)
+	multipleStoriesResponse, _ := json.Marshal([]models.Story{story})
+	notFoundResponse, _ := json.Marshal(enums.ErrorAuthorNotFound)
+	dbErrResponse, _ := json.Marshal(enums.ErrorDBError)
+
+	testCases := []TestCase{
 		{
 			writer:               httptest.NewRecorder(),
+			request:              getStoriesByAuthorRequest,
 			expectedResponseCode: http.StatusOK,
-			expectedResponseBody: []byte("pong"),
-			testMessage:          "Happy path for StoryController.GetStory",
+			expectedResponseBody: []byte(multipleStoriesResponse),
+			testMessage:          "Happy path for StoryController.GetStoriesByAuthor",
 		},
 		{
 			writer:               httptest.NewRecorder(),
+			request:              getStoriesByAuthorRequest,
 			expectedResponseCode: http.StatusNotFound,
 			expectedResponseBody: []byte("you done goofed kid"),
-			testMessage:          "Story not found for StoryController.GetStory",
+			testMessage:          "Story not found for StoryController.GetStoriesByAuthor",
+		},
+		{
+			writer:               httptest.NewRecorder(),
+			request:              getStoriesByAuthorRequest,
+			expectedResponseCode: http.StatusServiceUnavailable,
+			expectedResponseBody: []byte(dbErrResponse),
+			testMessage:          "Database not available for StoryController.GetStoriesByAuthor",
 		},
 	}
 
@@ -271,6 +371,65 @@ func TestGetStoriesByAuthor(t *testing.T) {
 			context, _ := gin.CreateTestContext(testCase.writer)
 			storyController.GetStoriesByAuthor(context)
 			// assertions
+			if testCase.expectedResponseCode != testCase.writer.Code {
+				t.Errorf("Response Code does not match expected status code")
+			}
+			if !bytes.Equal(testCase.expectedResponseBody, testCase.writer.Body.Bytes()) {
+				t.Errorf("Response body does not match expected response")
+			}
+
+		})
+	}
+}
+func TestGetStoriesByTag(t *testing.T) {
+	// Constants
+	route := "/story/authors/"
+	tag := "science-fiction"
+
+	//Mocks
+	storyController := StoryControllerImpl{}
+
+	// Requests & responses
+	getStoriesByAuthorRequest, _ := http.NewRequest(http.MethodGet, route+tag, nil)
+	multipleStoriesResponse, _ := json.Marshal([]models.Story{story})
+	notFoundResponse, _ := json.Marshal(enums.ErrorTagNotFound)
+	dbErrResponse, _ := json.Marshal(enums.ErrorDBError)
+
+	testCases := []TestCase{
+		{
+			writer:               httptest.NewRecorder(),
+			request:              getStoriesByAuthorRequest,
+			expectedResponseCode: http.StatusOK,
+			expectedResponseBody: []byte(multipleStoriesResponse),
+			testMessage:          "Happy path for StoryController.GetStoriesByTag",
+		},
+		{
+			writer:               httptest.NewRecorder(),
+			request:              getStoriesByAuthorRequest,
+			expectedResponseCode: http.StatusNotFound,
+			expectedResponseBody: []byte("you done goofed kid"),
+			testMessage:          "Story not found for StoryController.GetStoriesByTag",
+		},
+		{
+			writer:               httptest.NewRecorder(),
+			request:              getStoriesByAuthorRequest,
+			expectedResponseCode: http.StatusServiceUnavailable,
+			expectedResponseBody: []byte(dbErrResponse),
+			testMessage:          "Database not available for StoryController.GetStoriesByTag",
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.testMessage, func(t *testing.T) {
+			context, _ := gin.CreateTestContext(testCase.writer)
+			storyController.GetStoriesByAuthor(context)
+			// assertions
+			if testCase.expectedResponseCode != testCase.writer.Code {
+				t.Errorf("Response Code does not match expected status code")
+			}
+			if !bytes.Equal(testCase.expectedResponseBody, testCase.writer.Body.Bytes()) {
+				t.Errorf("Response body does not match expected response")
+			}
 
 		})
 	}

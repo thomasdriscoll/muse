@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/thomasdriscoll/muse/controllers"
 )
 
 // Potential tech debt -- abstract every controller to share interface, too complicated for now (for me)
@@ -17,6 +18,17 @@ type StoryController interface {
 }
 
 type StoryControllerImpl struct{}
+
+func StoryRouteHandler(story *gin.RouterGroup, storyController controllers.StoryController) {
+	story.GET("", storyController.GetRandomStory)
+	story.POST("/createFromURL", storyController.CreateStoryFromURL)
+	story.POST("/createFromFile", storyController.CreateStoryFromFile)
+	story.GET("/storyId/:id", storyController.GetStoryById)
+	story.PUT("/storyId/:id", storyController.UpdateStory)
+	story.DELETE("/storyId/:id", storyController.DeleteStory)
+	story.GET("/authors/:authorId", storyController.GetStoriesByAuthor)
+	story.GET("/tag/:tag", storyController.GetStoriesByTag)
+}
 
 func (sc StoryControllerImpl) GetRandomStory(c *gin.Context) {
 	c.JSON(200, "pong")
