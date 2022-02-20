@@ -8,9 +8,7 @@ import (
 type StoryController interface {
 	GetRandomStory(c *gin.Context)
 	CreateStoryFromURL(c *gin.Context)
-	CreateStoryFromFile(c *gin.Context)
 	GetStoryById(c *gin.Context)
-	UpdateStory(c *gin.Context)
 	DeleteStory(c *gin.Context)
 	GetStoriesByAuthor(c *gin.Context)
 	GetStoriesByTag(c *gin.Context)
@@ -25,14 +23,8 @@ func (sc StoryControllerImpl) GetRandomStory(c *gin.Context) {
 func (sc StoryControllerImpl) CreateStoryFromURL(c *gin.Context) {
 }
 
-func (sc StoryControllerImpl) CreateStoryFromFile(c *gin.Context) {
-}
-
 func (sc StoryControllerImpl) GetStoryById(c *gin.Context) {
 	c.JSON(200, "testing")
-}
-
-func (sc StoryControllerImpl) UpdateStory(c *gin.Context) {
 }
 
 func (sc StoryControllerImpl) DeleteStory(c *gin.Context) {

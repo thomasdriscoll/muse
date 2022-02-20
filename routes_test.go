@@ -32,9 +32,7 @@ func TestStoryRouteHandler(t *testing.T) {
 	// requests
 	// NOTE: Two return values meant they couldn't be inline in the testCases slice
 	getRandomStoryRequest, _ := http.NewRequest(http.MethodGet, routePrefix, nil)
-	createStoryFromURLRequest, _ := http.NewRequest(http.MethodPost, routePrefix+"/createFromURL", nil)   // add CreateFromURL request here
-	createStoryFromFileRequest, _ := http.NewRequest(http.MethodPost, routePrefix+"/createFromFile", nil) // add CreateFromFile request here
-
+	createStoryFromURLRequest, _ := http.NewRequest(http.MethodPost, routePrefix+"/createFromURL", nil) // add CreateFromURL request here
 	getStoryByIdRequest, _ := http.NewRequest(http.MethodGet, routePrefix+"/storyId/"+strconv.Itoa(storyId), nil)
 	updateStoryRequest, _ := http.NewRequest(http.MethodPut, routePrefix+"/storyId/"+strconv.Itoa(storyId), nil)
 	deleteStoryRequest, _ := http.NewRequest(http.MethodDelete, routePrefix+"/storyId/"+strconv.Itoa(storyId), nil)
@@ -219,18 +217,8 @@ func (msc MockStoryController) CreateStoryFromURL(c *gin.Context) {
 
 }
 
-func (msc MockStoryController) CreateStoryFromFile(c *gin.Context) {
-	c.JSON(201, "Create Story From File works")
-
-}
-
 func (msc MockStoryController) GetStoryById(c *gin.Context) {
 	c.JSON(200, "Get Story By Id works")
-
-}
-
-func (msc MockStoryController) UpdateStory(c *gin.Context) {
-	c.JSON(201, "Update Story works")
 
 }
 

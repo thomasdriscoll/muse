@@ -37,25 +37,6 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/StoryResponse'
-  '/story/createFromFile':
-    post:
-      tags:
-        - story-controller
-      operationId: createStoryFromFile
-      summary: Creates a story for the DB
-      requestBody:
-        content:
-          'application/json':
-            schema:
-              $ref: '#/components/schemas/StoryFromRequest' 
-      responses:
-        '201':
-          description: Created
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/StoryResponse'
-
   '/story/storyId/{id}':  
     get:
       tags:
@@ -72,25 +53,6 @@ paths:
       responses:
         '200':
           description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/StoryResponse'
-    put:
-      tags:
-        - story-controller
-      operationId: updateStory 
-      summary: Update a story by ID
-      parameters:
-        - name: id
-          in: path
-          description: Author ID, part of story metadata
-          required: true
-          schema:
-            type: string
-      responses:
-        '201':
-          description: Updated 
           content:
             '*/*':
               schema:

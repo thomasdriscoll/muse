@@ -5,12 +5,14 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strconv"
 	"testing"
 
 	"github.com/gin-gonic/gin"
 	"github.com/thomasdriscoll/muse/enums"
 	"github.com/thomasdriscoll/muse/models"
+	"github.com/thomasdriscoll/muse/testhelper"
 )
 
 // Global variables
@@ -18,7 +20,17 @@ var storyId = 1 // 1 until I have something better
 var storyController StoryController
 var story = models.Story{
 	Metadata: models.StoryMetadata{},
-	Content:  "content",
+	Content:  getStoryContent(),
+}
+
+func getStoryContent() string {
+	content, err := os.ReadFile(testhelper.GetTextFilePath())
+	if err != nil {
+		jsonContent, _ := json.Marshal(content)
+		return jsonContent
+	} else {
+		error.New("whoopsie goof, you messed up good on the testdata")
+	}
 }
 
 type TestCase struct {
@@ -28,6 +40,10 @@ type TestCase struct {
 	expectedResponseBody []byte
 	testMessage          string
 }
+
+// *************************************************************************************************************
+// 				TESTS
+// *************************************************************************************************************
 
 func TestGetStory(t *testing.T) {
 	// Constants
@@ -90,10 +106,10 @@ func TestCreateStoryFromURL(t *testing.T) {
 
 	// Requests
 	storyFromURLRequestNoId := models.StoryFromURLRequest{
-		Author:   "Homer",
+		Author:   "Hemingway, Ernest",
 		AuthorId: "",
 		UrlType:  "Gutenberg",
-		Url:      "https://www.gutenberg.org/files/2199/2199-h/2199-h.htm",
+		Url:      "https://www.gutenberg.org/cache/epub/67138/pg67138.txt",
 	}
 	createRequest, _ := http.NewRequest(http.MethodPost, route, string.NewReader(storyFromURLRequestNoId))
 	createResponse, _ := json.Marshal(story)
@@ -140,55 +156,6 @@ func TestCreateStoryFromURL(t *testing.T) {
 	}
 
 }
-
-/*
-func TestCreateStoryFromFile(t *testing.T) {
-	// Constants
-	route := "/story/createFromFile"
-
-	//Mocks
-	storyController := StoryControllerImpl{}
-
-	// Requests
-	createFromFileRequest, _ := http.NewRequest(http.MethodPost, route, nil)
-	createResponse, _ := json.Marshal(story)
-
-	testCases := []TestCase{
-		{
-			writer:               httptest.NewRecorder(),
-			request:              createFromFileRequest,
-			expectedResponseCode: http.StatusCreated,
-			expectedResponseBody: []byte(createResponse),
-			testMessage:          "Happy path for StoryController.CreateStory",
-		},
-		{
-			writer:               httptest.NewRecorder(),
-			request:              createFromFileRequest,
-			expectedResponseCode: http.StatusNotFound,
-			expectedResponseBody: []byte("you done goofed kid"),
-			testMessage:          "Story not found for StoryController.CreateStory",
-		},
-		{
-			writer:               httptest.NewRecorder(),
-			request:              createFromFileRequest,
-			expectedResponseCode: http.StatusBadRequest,
-			expectedResponseBody: []byte("you done goofed kid"),
-			testMessage:          "Story request not valid for StoryController.CreateStory",
-		},
-	}
-
-	for _, testCase := range testCases {
-		t.Run(testCase.testMessage, func(t *testing.T) {
-			context, _ := gin.CreateTestContext(testCase.writer)
-			context.Request = testCase.request
-			storyController.CreateStoryFromFile(context)
-			// assertions
-
-		})
-	}
-
-}
-*/
 
 func TestGetStoryById(t *testing.T) {
 	// Constants
@@ -243,36 +210,6 @@ func TestGetStoryById(t *testing.T) {
 	}
 
 }
-
-/*
-// UpdateStory tests
-func TestUpdateStory(t *testing.T) {
-	storyController := StoryControllerImpl{}
-	testCases := []TestCase{
-		{
-			writer:               httptest.NewRecorder(),
-			expectedResponseCode: http.StatusCreated,
-			expectedResponseBody: []byte("pong"),
-			testMessage:          "Happy path for StoryController.UpdateStory",
-		},
-		{
-			writer:               httptest.NewRecorder(),
-			expectedResponseCode: http.StatusNotFound,
-			expectedResponseBody: []byte("you done goofed kid"),
-			testMessage:          "Story not found for StoryController.UpdateStory",
-		},
-	}
-
-	for _, testCase := range testCases {
-		t.Run(testCase.testMessage, func(t *testing.T) {
-			context, _ := gin.CreateTestContext(testCase.writer)
-			storyController.UpdateStory(context)
-			// assertions
-
-		})
-	}
-}
-*/
 
 // deleteStory tests
 func TestDeleteStory(t *testing.T) {

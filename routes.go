@@ -8,9 +8,7 @@ import (
 func StoryRouteHandler(story *gin.RouterGroup, storyController controllers.StoryController) {
 	story.GET("", storyController.GetRandomStory)
 	story.POST("/createFromURL", storyController.CreateStoryFromURL)
-	story.POST("/createFromFile", storyController.CreateStoryFromFile)
 	story.GET("/storyId/:id", storyController.GetStoryById)
-	story.PUT("/storyId/:id", storyController.UpdateStory)
 	story.DELETE("/storyId/:id", storyController.DeleteStory)
 	story.GET("/authors/:authorId", storyController.GetStoriesByAuthor)
 	story.GET("/tag/:tag", storyController.GetStoriesByTag)
