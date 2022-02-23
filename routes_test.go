@@ -34,7 +34,6 @@ func TestStoryRouteHandler(t *testing.T) {
 	getRandomStoryRequest, _ := http.NewRequest(http.MethodGet, routePrefix, nil)
 	createStoryFromURLRequest, _ := http.NewRequest(http.MethodPost, routePrefix+"/createFromURL", nil) // add CreateFromURL request here
 	getStoryByIdRequest, _ := http.NewRequest(http.MethodGet, routePrefix+"/storyId/"+strconv.Itoa(storyId), nil)
-	updateStoryRequest, _ := http.NewRequest(http.MethodPut, routePrefix+"/storyId/"+strconv.Itoa(storyId), nil)
 	deleteStoryRequest, _ := http.NewRequest(http.MethodDelete, routePrefix+"/storyId/"+strconv.Itoa(storyId), nil)
 	getStoryByAuthorRequest, _ := http.NewRequest(http.MethodGet, routePrefix+"/authors/"+strconv.Itoa(authorId), nil)
 	getStoriesByTagRequest, _ := http.NewRequest(http.MethodGet, routePrefix+"/tag/"+tagId, nil)
@@ -67,24 +66,10 @@ func TestStoryRouteHandler(t *testing.T) {
 		},
 		{
 			writer:               httptest.NewRecorder(),
-			request:              createStoryFromFileRequest,
-			expectedResponseCode: 201,
-			expectedResponseBody: []byte("\"Create Story From File works\""),
-			testMessage:          "POST /story/createFromFile route",
-		},
-		{
-			writer:               httptest.NewRecorder(),
 			request:              getStoryByIdRequest,
 			expectedResponseCode: 200,
 			expectedResponseBody: []byte("\"Get Story By Id works\""),
 			testMessage:          "GET /story/:id route",
-		},
-		{
-			writer:               httptest.NewRecorder(),
-			request:              updateStoryRequest,
-			expectedResponseCode: 201,
-			expectedResponseBody: []byte("\"Update Story works\""),
-			testMessage:          "PUT /story/:id route",
 		},
 		{
 			writer:               httptest.NewRecorder(),
@@ -219,6 +204,11 @@ func (msc MockStoryController) CreateStoryFromURL(c *gin.Context) {
 
 func (msc MockStoryController) GetStoryById(c *gin.Context) {
 	c.JSON(200, "Get Story By Id works")
+
+}
+
+func (msc MockStoryController) UpdateStory(c *gin.Context) {
+	c.JSON(201, "Update Story works")
 
 }
 

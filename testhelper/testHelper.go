@@ -9,10 +9,10 @@ import (
 func GetTextFilePath() (string, error) {
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
-		return nil, errors.New("something went wrong with the test helper")
+		return "", errors.New("something went wrong with the test helper")
 	}
 
 	path := path.Join(path.Dir(filename), "..", "testdata", "simpleTextFile.txt")
 
-	return path
+	return path, nil
 }

@@ -1,14 +1,11 @@
 package main
 
 import (
-	"database/sql"
-
 	"github.com/gin-gonic/gin"
 	"github.com/thomasdriscoll/muse/controllers"
 )
 
 type App struct {
-	DB     *sql.DB
 	Router *gin.Engine
 }
 
@@ -33,7 +30,6 @@ func initializeRoutes(r *gin.Engine) {
 func main() {
 	app := App{
 		Router: setupRouter(),
-		DB:     nil,
 	}
 
 	app.Router.Run()

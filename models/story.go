@@ -2,7 +2,7 @@ package models
 
 type Story struct {
 	Metadata StoryMetadata
-	Content  string
+	Content  []byte
 }
 
 // Leave empty to leave story validation methods

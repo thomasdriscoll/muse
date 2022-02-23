@@ -3,6 +3,7 @@ package controllers
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -23,13 +24,17 @@ var story = models.Story{
 	Content:  getStoryContent(),
 }
 
-func getStoryContent() string {
-	content, err := os.ReadFile(testhelper.GetTextFilePath())
+func getStoryContent() []byte {
+	path, pathErr := testhelper.GetTextFilePath()
+	if pathErr != nil {
+		panic(pathErr.Error())
+	}
+	content, err := os.ReadFile(path)
 	if err != nil {
 		jsonContent, _ := json.Marshal(content)
 		return jsonContent
 	} else {
-		error.New("whoopsie goof, you messed up good on the testdata")
+		panic(errors.New("whoopsie goof, you messed up good on the testdata"))
 	}
 }
 
@@ -111,7 +116,11 @@ func TestCreateStoryFromURL(t *testing.T) {
 		UrlType:  "Gutenberg",
 		Url:      "https://www.gutenberg.org/cache/epub/67138/pg67138.txt",
 	}
-	createRequest, _ := http.NewRequest(http.MethodPost, route, string.NewReader(storyFromURLRequestNoId))
+	jsonifyStoryFromURLRequestNoId, jsonNoIdErr := json.Marshal(storyFromURLRequestNoId)
+	if jsonNoIdErr != nil {
+		panic(jsonNoIdErr.Error())
+	}
+	createRequest, _ := http.NewRequest(http.MethodPost, route, bytes.NewReader(jsonifyStoryFromURLRequestNoId))
 	createResponse, _ := json.Marshal(story)
 	invalidURLResponse, _ := json.Marshal(enums.ErrorInvalidURL)
 	dbErrorResponse, _ := json.Marshal(enums.ErrorDBError)
@@ -154,7 +163,6 @@ func TestCreateStoryFromURL(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 func TestGetStoryById(t *testing.T) {
@@ -291,7 +299,7 @@ func TestGetStoriesByAuthor(t *testing.T) {
 			writer:               httptest.NewRecorder(),
 			request:              getStoriesByAuthorRequest,
 			expectedResponseCode: http.StatusNotFound,
-			expectedResponseBody: []byte("you done goofed kid"),
+			expectedResponseBody: []byte(notFoundResponse),
 			testMessage:          "Story not found for StoryController.GetStoriesByAuthor",
 		},
 		{
@@ -344,7 +352,7 @@ func TestGetStoriesByTag(t *testing.T) {
 			writer:               httptest.NewRecorder(),
 			request:              getStoriesByAuthorRequest,
 			expectedResponseCode: http.StatusNotFound,
-			expectedResponseBody: []byte("you done goofed kid"),
+			expectedResponseBody: []byte(notFoundResponse),
 			testMessage:          "Story not found for StoryController.GetStoriesByTag",
 		},
 		{

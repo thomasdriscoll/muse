@@ -24,7 +24,7 @@ func (sc StoryControllerImpl) CreateStoryFromURL(c *gin.Context) {
 }
 
 func (sc StoryControllerImpl) GetStoryById(c *gin.Context) {
-	c.JSON(200, "testing")
+
 }
 
 func (sc StoryControllerImpl) DeleteStory(c *gin.Context) {
