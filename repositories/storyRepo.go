@@ -9,6 +9,8 @@ import (
 type StoryRepository interface {
 	FindById(ID int) (*models.Story, error)
 	Save(story *models.Story) error
+	DeleteById(ID int) error
+	GetStoriesByField(field, fieldId string) ([]*models.Story, error)
 }
 
 type StoryRepo struct {
@@ -27,4 +29,12 @@ func (r *StoryRepo) FindById(ID int) (*models.Story, error) {
 
 func (r *StoryRepo) Save(story *models.Story) error {
 	return nil
+}
+
+func (r *StoryRepo) DeleteById(ID int) error {
+
+}
+
+func (r *StoryRepo) GetStoriesByField(field, fieldId string) ([]*models.Story, error) {
+
 }
