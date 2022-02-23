@@ -207,11 +207,6 @@ func (msc MockStoryController) GetStoryById(c *gin.Context) {
 
 }
 
-func (msc MockStoryController) UpdateStory(c *gin.Context) {
-	c.JSON(201, "Update Story works")
-
-}
-
 func (msc MockStoryController) DeleteStory(c *gin.Context) {
 	c.JSON(204, "")
 
