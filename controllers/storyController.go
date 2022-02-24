@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/thomasdriscoll/muse/repositories"
 )
 
 // Potential tech debt -- abstract every controller to share interface, too complicated for now (for me)
@@ -14,7 +15,9 @@ type StoryController interface {
 	GetStoriesByTag(c *gin.Context)
 }
 
-type StoryControllerImpl struct{}
+type StoryControllerImpl struct {
+	StoryRepo repositories.StoryRepository
+}
 
 func (sc StoryControllerImpl) GetRandomStory(c *gin.Context) {
 	c.JSON(200, "pong")
@@ -24,7 +27,6 @@ func (sc StoryControllerImpl) CreateStoryFromURL(c *gin.Context) {
 }
 
 func (sc StoryControllerImpl) GetStoryById(c *gin.Context) {
-
 }
 
 func (sc StoryControllerImpl) DeleteStory(c *gin.Context) {

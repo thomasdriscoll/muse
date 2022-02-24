@@ -2,7 +2,9 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v4"
 	"github.com/thomasdriscoll/muse/controllers"
+	"github.com/thomasdriscoll/muse/repositories"
 )
 
 type App struct {
@@ -10,26 +12,30 @@ type App struct {
 }
 
 // Router setup
-func setupRouter() *gin.Engine {
+func setup(db *pgx.Conn) *gin.Engine {
+	// Create generics
 	r := gin.Default()
-	initializeRoutes(r)
+
+	// Create repositories
+	storyRepo := repositories.NewStoryRepo(db)
+
+	// Create controllers
+	storyController := controllers.StoryControllerImpl{
+		StoryRepo: storyRepo,
+	}
+	userController := controllers.UserControllerImpl{}
+
+	storyPrefix := r.Group("/story")
+	StoryRouteHandler(storyPrefix, storyController)
+	userPrefix := r.Group("/user")
+	UserRouteHandler(userPrefix, userController)
 	return r
 }
 
-// Add each controller here
-func initializeRoutes(r *gin.Engine) {
-	storyPrefix := r.Group("/story")
-	storyController := controllers.StoryControllerImpl{}
-	StoryRouteHandler(storyPrefix, storyController)
-
-	userPrefix := r.Group("/user")
-	userController := controllers.UserControllerImpl{}
-	UserRouteHandler(userPrefix, userController)
-}
-
 func main() {
+	db := repositories.ConnectPostgreSQLDB()
 	app := App{
-		Router: setupRouter(),
+		Router: setup(db),
 	}
 
 	app.Router.Run()

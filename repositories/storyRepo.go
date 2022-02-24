@@ -1,8 +1,11 @@
 package repositories
 
 import (
-	"database/sql"
+	"context"
+	"errors"
 
+	"github.com/jackc/pgx/v4"
+	"github.com/thomasdriscoll/muse/enums"
 	"github.com/thomasdriscoll/muse/models"
 )
 
@@ -14,17 +17,23 @@ type StoryRepository interface {
 }
 
 type StoryRepo struct {
-	db *sql.DB
+	db *pgx.Conn
 }
 
-func NewStoryRepo(db *sql.DB) *StoryRepo {
+func NewStoryRepo(db *pgx.Conn) *StoryRepo {
 	return &StoryRepo{
 		db: db,
 	}
 }
 
 func (r *StoryRepo) FindById(ID int) (*models.Story, error) {
-	return &models.Story{}, nil
+	var storyFromID models.Story
+	err := r.db.QueryRow(context.Background(), "select * from story where id=$d", ID).Scan(&storyFromID)
+	if err != nil {
+		// Add logger statement here
+		return nil, errors.New(enums.ErrorStoryNotFound)
+	}
+	return &storyFromID, nil
 }
 
 func (r *StoryRepo) Save(story *models.Story) error {
@@ -32,9 +41,9 @@ func (r *StoryRepo) Save(story *models.Story) error {
 }
 
 func (r *StoryRepo) DeleteById(ID int) error {
-
+	return nil
 }
 
 func (r *StoryRepo) GetStoriesByField(field, fieldId string) ([]*models.Story, error) {
-
+	return nil, nil
 }
