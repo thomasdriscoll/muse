@@ -197,6 +197,14 @@ func TestGetStoryById(t *testing.T) {
 		{
 			writer:               httptest.NewRecorder(),
 			request:              getStoryByIdRequest,
+			expectedResponseCode: http.StatusBadRequest,
+			expectedResponseBody: []byte(notFoundResponse),
+			testMessage:          "Story not found for StoryController.GetStoryById",
+		},
+
+		{
+			writer:               httptest.NewRecorder(),
+			request:              getStoryByIdRequest,
 			expectedResponseCode: http.StatusServiceUnavailable,
 			expectedResponseBody: []byte(dbErrResponse),
 			testMessage:          "Database error",
