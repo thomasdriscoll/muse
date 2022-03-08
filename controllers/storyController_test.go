@@ -17,7 +17,7 @@ import (
 )
 
 // Global variables
-var storyId = 1 // 1 until I have something better
+var storyId uint64 = 1 // 1 until I have something better
 var storyController StoryController
 var story = models.Story{
 	Metadata: models.StoryMetadata{},
@@ -171,13 +171,20 @@ func TestGetStoryById(t *testing.T) {
 	storyId := 1
 
 	//Mocks
-	storyController := StoryControllerImpl{}
+	storyController := StoryControllerImpl{
+		StoryRepo: &MockStoryRepo{},
+	}
+	engine := gin.New()
+	engine.GET(route+":id", storyController.GetStoryById)
 
 	// Requests & responses
 	getStoryByIdRequest, _ := http.NewRequest(http.MethodGet, route+strconv.Itoa(storyId), nil)
+	notFoundGetStoryByIdRequest, _ := http.NewRequest(http.MethodGet, route+strconv.Itoa(0), nil)
+	invalidIdGetStoryByIdRequest, _ := http.NewRequest(http.MethodGet, route+"invalidId", nil)
+
 	okResponse, _ := json.Marshal(story)
 	notFoundResponse, _ := json.Marshal(enums.ErrorStoryNotFound)
-	dbErrResponse, _ := json.Marshal(enums.ErrorDBError)
+	invalidIdResponse, _ := json.Marshal(enums.ErrorInvalidStoryId)
 
 	testCases := []TestCase{
 		{
@@ -189,32 +196,23 @@ func TestGetStoryById(t *testing.T) {
 		},
 		{
 			writer:               httptest.NewRecorder(),
-			request:              getStoryByIdRequest,
+			request:              notFoundGetStoryByIdRequest,
 			expectedResponseCode: http.StatusNotFound,
 			expectedResponseBody: []byte(notFoundResponse),
 			testMessage:          "Story not found for StoryController.GetStoryById",
 		},
 		{
 			writer:               httptest.NewRecorder(),
-			request:              getStoryByIdRequest,
+			request:              invalidIdGetStoryByIdRequest,
 			expectedResponseCode: http.StatusBadRequest,
-			expectedResponseBody: []byte(notFoundResponse),
-			testMessage:          "Story not found for StoryController.GetStoryById",
-		},
-
-		{
-			writer:               httptest.NewRecorder(),
-			request:              getStoryByIdRequest,
-			expectedResponseCode: http.StatusServiceUnavailable,
-			expectedResponseBody: []byte(dbErrResponse),
-			testMessage:          "Database error",
+			expectedResponseBody: []byte(invalidIdResponse),
+			testMessage:          "Invalid ID for StoryController.GetStoryById",
 		},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.testMessage, func(t *testing.T) {
-			context, _ := gin.CreateTestContext(testCase.writer)
-			storyController.GetStoryById(context)
+			engine.ServeHTTP(testCase.writer, testCase.request)
 			// assertions
 			if testCase.expectedResponseCode != testCase.writer.Code {
 				t.Errorf("Response Code does not match expected status code")
@@ -234,7 +232,11 @@ func TestDeleteStory(t *testing.T) {
 	storyId := 1
 
 	//Mocks
-	storyController := StoryControllerImpl{}
+	storyController := StoryControllerImpl{
+		StoryRepo: &MockStoryRepo{},
+	}
+	engine := gin.New()
+	engine.GET(route+":id", storyController.DeleteStory)
 
 	// Requests & responses
 	deleteStoryByIdRequest, _ := http.NewRequest(http.MethodDelete, route+strconv.Itoa(storyId), nil)
@@ -267,8 +269,7 @@ func TestDeleteStory(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.testMessage, func(t *testing.T) {
-			context, _ := gin.CreateTestContext(testCase.writer)
-			storyController.DeleteStory(context)
+			engine.ServeHTTP(testCase.writer, testCase.request)
 			// assertions
 			if testCase.expectedResponseCode != testCase.writer.Code {
 				t.Errorf("Response Code does not match expected status code")
@@ -386,4 +387,30 @@ func TestGetStoriesByTag(t *testing.T) {
 
 		})
 	}
+}
+
+// StoryRepo stubs
+type MockStoryRepo struct{}
+
+func (r *MockStoryRepo) FindById(ID uint64) (*models.Story, error) {
+	if ID == storyId {
+		return &story, nil
+	} else {
+		return nil, errors.New(enums.ErrorStoryNotFound)
+	}
+}
+
+func (r *MockStoryRepo) Save(story *models.Story) error {
+	return nil
+}
+
+func (r *MockStoryRepo) DeleteById(ID uint64) error {
+	if ID != storyId {
+		return errors.New(enums.ErrorStoryNotFound)
+	}
+	return nil
+}
+
+func (r *MockStoryRepo) GetStoriesByField(field, fieldId string) ([]*models.Story, error) {
+	return nil, nil
 }

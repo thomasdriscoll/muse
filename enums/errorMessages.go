@@ -4,6 +4,7 @@ type ErrorMessage string
 
 const (
 	ErrorInvalidURL     ErrorMessage = "400: The URL provided is invalid"
+	ErrorInvalidStoryId              = "400: Provided story id is invalid"
 	ErrorAuthorNotFound              = "404: Author not found in Muse DB"
 	ErrorStoryNotFound               = "404: Story not found in Muse DB"
 	ErrorTagNotFound                 = "404: Tag not found in Muse DB"
