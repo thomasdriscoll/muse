@@ -7,11 +7,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/thomasdriscoll/muse/enums"
-	"github.com/thomasdriscoll/muse/repositories"
+	"github.com/thomasdriscoll/muse/models"
 	"github.com/thomasdriscoll/muse/services"
 )
 
-// Potential tech debt -- abstract every controller to share interface, too complicated for now (for me)
 type StoryController interface {
 	GetRandomStory(c *gin.Context)
 	CreateStoryFromURL(c *gin.Context)
@@ -22,13 +21,12 @@ type StoryController interface {
 }
 
 type StoryControllerImpl struct {
-	StoryRepo     repositories.StoryRepository
-	StoryScrapper services.StoryScrapper
+	StorySvc services.StoryService
 }
 
 // Main functions
 func (sc StoryControllerImpl) GetRandomStory(c *gin.Context) {
-	story, err := sc.StoryRepo.GetStoryByRandom()
+	story, err := sc.StorySvc.GetStoryByRandom()
 	if err != nil {
 		c.JSON(http.StatusNotFound, err.Error())
 	}
@@ -36,6 +34,17 @@ func (sc StoryControllerImpl) GetRandomStory(c *gin.Context) {
 }
 
 func (sc StoryControllerImpl) CreateStoryFromURL(c *gin.Context) {
+	storyRequest := models.StoryFromURLRequest{}
+	if err := c.BindJSON(&storyRequest); err != nil {
+		c.JSON(http.StatusBadRequest, enums.ErrorInvalidStoryRequest)
+		return
+	}
+	story, err := sc.StorySvc.CreateStory(&storyRequest)
+	if err != nil {
+		c.JSON(http.StatusNotFound, err.Error())
+		return
+	}
+	c.JSON(http.StatusCreated, &story)
 }
 
 func (sc StoryControllerImpl) GetStoryById(c *gin.Context) {
@@ -47,7 +56,7 @@ func (sc StoryControllerImpl) GetStoryById(c *gin.Context) {
 		return
 	}
 
-	storyFromId, err := sc.StoryRepo.GetStoryById(id)
+	storyFromId, err := sc.StorySvc.GetStoryById(id)
 
 	if err != nil {
 		c.JSON(http.StatusNotFound, err.Error())
@@ -65,7 +74,7 @@ func (sc StoryControllerImpl) DeleteStory(c *gin.Context) {
 		return
 	}
 
-	err = sc.StoryRepo.DeleteById(id)
+	err = sc.StorySvc.DeleteById(id)
 
 	if err != nil {
 		c.JSON(http.StatusNotFound, err.Error())
@@ -83,7 +92,7 @@ func (sc StoryControllerImpl) GetStoriesByAuthor(c *gin.Context) {
 		return
 	}
 
-	stories, err := sc.StoryRepo.GetStoriesByAuthorId(authorId)
+	stories, err := sc.StorySvc.GetStoriesByAuthorId(authorId)
 
 	if err != nil {
 		c.JSON(http.StatusNotFound, err.Error())
@@ -96,7 +105,7 @@ func (sc StoryControllerImpl) GetStoriesByAuthor(c *gin.Context) {
 func (sc StoryControllerImpl) GetStoriesByTag(c *gin.Context) {
 	tag := c.Param("tag")
 
-	stories, err := sc.StoryRepo.GetStoriesByTag(tag)
+	stories, err := sc.StorySvc.GetStoriesByTag(tag)
 
 	if err != nil {
 		c.JSON(http.StatusNotFound, err.Error())

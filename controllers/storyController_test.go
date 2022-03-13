@@ -19,7 +19,6 @@ import (
 
 // Global variables
 var storyId uint64 = 1 // 1 until I have something better
-var storyController StoryController
 var story = models.Story{
 	StoryMetadata: models.StoryMetadata{},
 	Content:       getStoryContent(),
@@ -57,7 +56,7 @@ func TestGetStory(t *testing.T) {
 
 	//Mocks
 	storyController := StoryControllerImpl{
-		StoryRepo: &MockStoryRepo{},
+		StorySvc: &MockStoryService{},
 	}
 	engine := gin.New()
 	engine.GET(route, storyController.GetRandomStory)
@@ -96,49 +95,91 @@ func TestCreateStoryFromURL(t *testing.T) {
 
 	//Mocks
 	storyController := StoryControllerImpl{
-		StoryRepo:     &MockStoryRepo{},
-		StoryScrapper: &MockStoryScrapper{},
+		StorySvc: &MockStoryService{},
 	}
 	engine := gin.New()
-	engine.GET(route, storyController.GetRandomStory)
+	engine.POST(route, storyController.CreateStoryFromURL)
 
 	// Requests
-	storyFromURLRequestNoId := models.StoryFromURLRequest{
-		Author:   "Hemingway, Ernest",
-		AuthorId: "",
-		UrlType:  "Gutenberg",
-		Url:      "https://www.gutenberg.org/cache/epub/67138/pg67138.txt",
+	badRequestBody := "junk"
+	jsonBadRequest, _ := json.Marshal(badRequestBody)
+	badRequest, _ := http.NewRequest(http.MethodPost, route, bytes.NewReader(jsonBadRequest))
+
+	gutenbergRequestBody := models.StoryFromURLRequest{
+		Tags:    []string{"realisticFiction"},
+		Title:   "The Sun Also Rises",
+		UrlType: enums.Gutenberg,
+		Url:     "https://www.gutenberg.org/cache/epub/67138/pg67138.txt",
 	}
-	jsonifyStoryFromURLRequestNoId, jsonNoIdErr := json.Marshal(storyFromURLRequestNoId)
-	if jsonNoIdErr != nil {
-		panic(jsonNoIdErr.Error())
+	jsonGutenbergRequest, _ := json.Marshal(gutenbergRequestBody)
+	gutenbergPostRequest, _ := http.NewRequest(http.MethodPost, route, bytes.NewReader(jsonGutenbergRequest))
+
+	notFoundGutenbergRequestBody := models.StoryFromURLRequest{
+		Tags:    []string{"realisticFiction"},
+		Title:   "junk",
+		UrlType: enums.Gutenberg,
+		Url:     "https://www.gutenberg.org/cache/epub/67138/pg67138.txt",
 	}
-	createRequest, _ := http.NewRequest(http.MethodPost, route, bytes.NewReader(jsonifyStoryFromURLRequestNoId))
+	jsonNotFoundGutenbergRequest, _ := json.Marshal(notFoundGutenbergRequestBody)
+	notFoundGutenbergPostRequest, _ := http.NewRequest(http.MethodPost, route, bytes.NewReader(jsonNotFoundGutenbergRequest))
+
+	wikipediaRequestBody := models.StoryFromURLRequest{
+		Tags:    []string{"superhero"},
+		Title:   "Superman",
+		UrlType: enums.Wikipedia,
+		Url:     "https://en.wikipedia.org/wiki/Superman",
+	}
+	jsonWikipediaRequest, _ := json.Marshal(wikipediaRequestBody)
+	wikipediaPostRequest, _ := http.NewRequest(http.MethodPost, route, bytes.NewReader(jsonWikipediaRequest))
+
+	notFoundWikipediaRequestBody := models.StoryFromURLRequest{
+		Tags:    []string{"superhero"},
+		Title:   "junk",
+		UrlType: enums.Wikipedia,
+		Url:     "https://en.wikipedia.org/wiki/Superman",
+	}
+	jsonNotFoundWikipediaRequest, _ := json.Marshal(notFoundWikipediaRequestBody)
+	notFoundWikipediaPostRequest, _ := http.NewRequest(http.MethodPost, route, bytes.NewReader(jsonNotFoundWikipediaRequest))
+
 	createResponse, _ := json.Marshal(story)
-	invalidURLResponse, _ := json.Marshal(enums.ErrorInvalidURL)
-	dbErrorResponse, _ := json.Marshal(enums.ErrorDBError)
+	badRequestResponse, _ := json.Marshal(enums.ErrorInvalidStoryRequest)
+	notFoundURLResponse, _ := json.Marshal(enums.ErrorURLNotFound)
 
 	testCases := []TestCase{
 		{
 			writer:               httptest.NewRecorder(),
-			request:              createRequest,
+			request:              badRequest,
+			expectedResponseCode: http.StatusBadRequest,
+			expectedResponseBody: []byte(badRequestResponse),
+			testMessage:          "Bad request StoryController.CreateStoryFromURL",
+		},
+		{
+			writer:               httptest.NewRecorder(),
+			request:              gutenbergPostRequest,
 			expectedResponseCode: http.StatusCreated,
 			expectedResponseBody: []byte(createResponse),
-			testMessage:          "Happy path for StoryController.CreateStoryFromURL",
+			testMessage:          "Happy path for Gutenberg request StoryController.CreateStoryFromURL",
 		},
 		{
 			writer:               httptest.NewRecorder(),
-			request:              createRequest,
-			expectedResponseCode: http.StatusBadRequest,
-			expectedResponseBody: []byte(invalidURLResponse),
-			testMessage:          "Test that InvalidURLs are rejected",
+			request:              notFoundGutenbergPostRequest,
+			expectedResponseCode: http.StatusNotFound,
+			expectedResponseBody: []byte(notFoundURLResponse),
+			testMessage:          "Test that InvalidURLs for Gutenberg are rejected",
 		},
 		{
 			writer:               httptest.NewRecorder(),
-			request:              createRequest,
-			expectedResponseCode: http.StatusServiceUnavailable,
-			expectedResponseBody: []byte(dbErrorResponse),
-			testMessage:          "Database error",
+			request:              wikipediaPostRequest,
+			expectedResponseCode: http.StatusCreated,
+			expectedResponseBody: []byte(createResponse),
+			testMessage:          "Happy path for Wikipedia request for StoryController.CreateStoryFromURL",
+		},
+		{
+			writer:               httptest.NewRecorder(),
+			request:              notFoundWikipediaPostRequest,
+			expectedResponseCode: http.StatusNotFound,
+			expectedResponseBody: []byte(notFoundURLResponse),
+			testMessage:          "Test that InvalidURLs for Wikipedia are rejected",
 		},
 	}
 
@@ -149,9 +190,13 @@ func TestCreateStoryFromURL(t *testing.T) {
 			storyController.CreateStoryFromURL(context)
 			// assertions
 			if testCase.expectedResponseCode != testCase.writer.Code {
+				fmt.Println(testCase.expectedResponseCode)
+				fmt.Println(testCase.writer.Code)
 				t.Errorf("Response Code does not match expected status code")
 			}
 			if !bytes.Equal(testCase.expectedResponseBody, testCase.writer.Body.Bytes()) {
+				fmt.Println(string(testCase.expectedResponseBody))
+				fmt.Println(testCase.writer.Body)
 				t.Errorf("Response body does not match expected response")
 			}
 		})
@@ -165,7 +210,7 @@ func TestGetStoryById(t *testing.T) {
 
 	//Mocks
 	storyController := StoryControllerImpl{
-		StoryRepo: &MockStoryRepo{},
+		StorySvc: &MockStoryService{},
 	}
 	engine := gin.New()
 	engine.GET(route+":id", storyController.GetStoryById)
@@ -226,7 +271,7 @@ func TestDeleteStory(t *testing.T) {
 
 	//Mocks
 	storyController := StoryControllerImpl{
-		StoryRepo: &MockStoryRepo{},
+		StorySvc: &MockStoryService{},
 	}
 	engine := gin.New()
 	engine.DELETE(route+":id", storyController.DeleteStory)
@@ -287,7 +332,7 @@ func TestGetStoriesByAuthor(t *testing.T) {
 
 	//Mocks
 	storyController := StoryControllerImpl{
-		StoryRepo: &MockStoryRepo{},
+		StorySvc: &MockStoryService{},
 	}
 	engine := gin.New()
 	engine.GET(route+":authorId", storyController.GetStoriesByAuthor)
@@ -346,7 +391,7 @@ func TestGetStoriesByTag(t *testing.T) {
 
 	//Mocks
 	storyController := StoryControllerImpl{
-		StoryRepo: &MockStoryRepo{},
+		StorySvc: &MockStoryService{},
 	}
 	engine := gin.New()
 	engine.GET(route+":tag", storyController.GetStoriesByTag)
@@ -392,10 +437,10 @@ func TestGetStoriesByTag(t *testing.T) {
 	}
 }
 
-// StoryRepo stubs
-type MockStoryRepo struct{}
+// StorySvc stubs
+type MockStoryService struct{}
 
-func (r *MockStoryRepo) GetStoryById(ID uint64) (*models.Story, error) {
+func (r *MockStoryService) GetStoryById(ID uint64) (*models.Story, error) {
 	if ID == storyId {
 		return &story, nil
 	} else {
@@ -403,22 +448,25 @@ func (r *MockStoryRepo) GetStoryById(ID uint64) (*models.Story, error) {
 	}
 }
 
-func (r *MockStoryRepo) Save(story *models.Story) error {
-	return nil
-}
-
-func (r *MockStoryRepo) GetStoryByRandom() (*models.Story, error) {
+func (r *MockStoryService) CreateStory(storyRequest *models.StoryFromURLRequest) (*models.Story, error) {
+	if storyRequest.Title == "junk" {
+		return nil, errors.New(enums.ErrorURLNotFound)
+	}
 	return &story, nil
 }
 
-func (r *MockStoryRepo) DeleteById(ID uint64) error {
+func (r *MockStoryService) GetStoryByRandom() (*models.Story, error) {
+	return &story, nil
+}
+
+func (r *MockStoryService) DeleteById(ID uint64) error {
 	if ID != storyId {
 		return errors.New(enums.ErrorStoryNotFound)
 	}
 	return nil
 }
 
-func (r *MockStoryRepo) GetStoriesByTag(tag string) (*[]models.Story, error) {
+func (r *MockStoryService) GetStoriesByTag(tag string) (*[]models.Story, error) {
 	if tag == "scienceFiction" {
 		stories := []models.Story{story}
 		return &stories, nil
@@ -426,16 +474,10 @@ func (r *MockStoryRepo) GetStoriesByTag(tag string) (*[]models.Story, error) {
 	return nil, errors.New(enums.ErrorTagNotFound)
 }
 
-func (r *MockStoryRepo) GetStoriesByAuthorId(authorId uint64) (*[]models.Story, error) {
+func (r *MockStoryService) GetStoriesByAuthorId(authorId uint64) (*[]models.Story, error) {
 	if authorId == 1 {
 		stories := []models.Story{story}
 		return &stories, nil
 	}
 	return nil, errors.New(enums.ErrorAuthorNotFound)
-}
-
-type MockStoryScrapper struct{}
-
-func (s *MockStoryScrapper) Scrape(url string, urlType string) (*models.Story, error) {
-	return nil, nil
 }

@@ -9,6 +9,8 @@ type StoryMetadata struct {
 	dateUpdated time.Time
 	description string
 	likes       uint64
+	source      string
+	sourceType  string
 	storyId     string
 	storyTitle  string
 	tags        []string

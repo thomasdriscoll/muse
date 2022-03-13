@@ -17,16 +17,17 @@ func setup(db *pgx.Conn) *gin.Engine {
 	// Create generics
 	r := gin.Default()
 
-	// Create services
-	storyScrapper := services.StoryScrapperImpl{}
-
 	// Create repositories
 	storyRepo := repositories.NewStoryRepo(db)
 
+	// Create services
+	storyService := services.StoryServiceImpl{
+		StoryRepo: storyRepo,
+	}
+
 	// Create controllers
 	storyController := controllers.StoryControllerImpl{
-		StoryRepo:     &storyRepo,
-		StoryScrapper: &storyScrapper,
+		StorySvc: &storyService,
 	}
 	userController := controllers.UserControllerImpl{}
 
