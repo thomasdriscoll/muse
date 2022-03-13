@@ -8,8 +8,13 @@ type StoryMetadata struct {
 	dateCreated time.Time
 	dateUpdated time.Time
 	description string
+	likes       uint64
+	source      string
+	sourceType  string
 	storyId     string
 	storyTitle  string
+	tags        []string
+	views       uint64
 }
 
 func (smd *StoryMetadata) UpdateTime() time.Time {

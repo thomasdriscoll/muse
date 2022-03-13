@@ -195,16 +195,17 @@ components:
     StoryFromURLRequest:
       type: object
       properties:
-        author:
-          type: string
-        authorId:
+        tags:
+          type: array
+            items:
+              description: array of relevant tags
+              type: string
+        title:
           type: string
         urlType:
           type: string
           summary: Types should be: Wikipedia, Article(specify later if needed)
         url:
-          type: string
-        title:
           type: string
     StoryFromFileRequest:
       type: object

@@ -5,6 +5,7 @@ import (
 	"github.com/jackc/pgx/v4"
 	"github.com/thomasdriscoll/muse/controllers"
 	"github.com/thomasdriscoll/muse/repositories"
+	"github.com/thomasdriscoll/muse/services"
 )
 
 type App struct {
@@ -19,9 +20,14 @@ func setup(db *pgx.Conn) *gin.Engine {
 	// Create repositories
 	storyRepo := repositories.NewStoryRepo(db)
 
+	// Create services
+	storyService := services.StoryServiceImpl{
+		StoryRepo: storyRepo,
+	}
+
 	// Create controllers
 	storyController := controllers.StoryControllerImpl{
-		StoryRepo: storyRepo,
+		StorySvc: &storyService,
 	}
 	userController := controllers.UserControllerImpl{}
 
