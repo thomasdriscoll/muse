@@ -10,10 +10,12 @@ import (
 )
 
 type StoryRepository interface {
-	FindById(ID uint64) (*models.Story, error)
+	GetStoryById(ID uint64) (*models.Story, error)
 	Save(story *models.Story) error
 	DeleteById(ID uint64) error
-	GetStoriesByField(field, fieldId string) ([]*models.Story, error)
+	GetStoryByRandom() (*models.Story, error)
+	GetStoriesByAuthorId(authorId uint64) (*[]models.Story, error)
+	GetStoriesByTag(tag string) (*[]models.Story, error)
 }
 
 type StoryRepo struct {
@@ -26,7 +28,7 @@ func NewStoryRepo(db *pgx.Conn) *StoryRepo {
 	}
 }
 
-func (r *StoryRepo) FindById(ID uint64) (*models.Story, error) {
+func (r *StoryRepo) GetStoryById(ID uint64) (*models.Story, error) {
 	var storyFromID models.Story
 	err := r.db.QueryRow(context.Background(), "select * from story where id=$d", ID).Scan(&storyFromID)
 	if err != nil {
@@ -43,7 +45,13 @@ func (r *StoryRepo) Save(story *models.Story) error {
 func (r *StoryRepo) DeleteById(ID uint64) error {
 	return nil
 }
+func (r *StoryRepo) GetStoryByRandom() (*models.Story, error) {
+	return nil, nil
+}
+func (r *StoryRepo) GetStoriesByAuthorId(authorId uint64) (*[]models.Story, error) {
+	return nil, nil
+}
 
-func (r *StoryRepo) GetStoriesByField(field, fieldId string) ([]*models.Story, error) {
+func (r *StoryRepo) GetStoriesByTag(tag string) (*[]models.Story, error) {
 	return nil, nil
 }
