@@ -9,43 +9,44 @@ import (
 )
 
 type StoryService interface {
-	GetStoryById(ID uint64) (*models.Story, error)
+	GetStoryById(ID string) (*models.Story, error)
 	CreateStory(storyRequest *models.StoryFromURLRequest) (*models.Story, error)
-	DeleteById(ID uint64) error
+	DeleteById(ID string) error
 	GetStoryByRandom() (*models.Story, error)
-	GetStoriesByAuthorId(authorId uint64) (*[]models.Story, error)
+	GetStoriesByAuthorId(authorId string) (*[]models.Story, error)
 	GetStoriesByTag(tag string) (*[]models.Story, error)
 }
 
 type StoryServiceImpl struct {
-	StoryRepo repositories.StoryRepository
+	Scrapper          Scrapper
+	StoryMetadataRepo repositories.StoryMetadataRepository
 }
 
-// func scrape(url string, urlType string) (*models.Story, error) {
-// 	return nil, nil
-// }
-
-func (s *StoryServiceImpl) GetStoryById(ID uint64) (*models.Story, error) {
-	var storyFromID *models.Story
-	storyFromID, err := s.StoryRepo.GetStoryById(ID)
+func (s *StoryServiceImpl) GetStoryById(ID string) (*models.Story, error) {
+	storyMetadataFromID, err := s.StoryMetadataRepo.GetStoryById(ID)
 	if err != nil {
 		// Add logger statement here
 		return nil, errors.New(enums.ErrorStoryNotFound)
 	}
-	return storyFromID, nil
+
+	storyFromID := models.Story{
+		StoryMetadata: *storyMetadataFromID,
+		Content:       []byte{},
+	}
+	return &storyFromID, nil
 }
 
 func (s *StoryServiceImpl) CreateStory(storyRequest *models.StoryFromURLRequest) (*models.Story, error) {
 	return nil, nil
 }
 
-func (s *StoryServiceImpl) DeleteById(ID uint64) error {
+func (s *StoryServiceImpl) DeleteById(ID string) error {
 	return nil
 }
 func (s *StoryServiceImpl) GetStoryByRandom() (*models.Story, error) {
 	return nil, nil
 }
-func (s *StoryServiceImpl) GetStoriesByAuthorId(authorId uint64) (*[]models.Story, error) {
+func (s *StoryServiceImpl) GetStoriesByAuthorId(authorId string) (*[]models.Story, error) {
 	return nil, nil
 }
 
