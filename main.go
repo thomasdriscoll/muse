@@ -18,11 +18,11 @@ func setup(db *pgx.Conn) *gin.Engine {
 	r := gin.Default()
 
 	// Create repositories
-	storyRepo := repositories.NewStoryRepo(db)
+	storyMetadataRepo := repositories.NewStoryMetadataRepo(db)
 
 	// Create services
 	storyService := services.StoryServiceImpl{
-		StoryRepo: storyRepo,
+		StoryMetadataRepo: storyMetadataRepo,
 	}
 
 	// Create controllers

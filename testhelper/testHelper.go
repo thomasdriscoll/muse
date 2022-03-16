@@ -4,6 +4,8 @@ import (
 	"errors"
 	"path"
 	"runtime"
+
+	"github.com/thomasdriscoll/muse/models"
 )
 
 func GetTextFilePath() (string, error) {
@@ -15,4 +17,8 @@ func GetTextFilePath() (string, error) {
 	path := path.Join(path.Dir(filename), "..", "testdata", "simpleTextFile.txt")
 
 	return path, nil
+}
+
+func GetStoryMetadata() models.StoryMetadata {
+	return models.StoryMetadata{}
 }

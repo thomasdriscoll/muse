@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"strconv"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -18,9 +17,12 @@ import (
 )
 
 // Global variables
-var storyId uint64 = 1 // 1 until I have something better
+var storyId string = "s3BucketId-randomstring"
+var junkId string = "junk"
+var notFoundId string = "s3Bucket-notfound"
+
 var story = models.Story{
-	StoryMetadata: models.StoryMetadata{},
+	StoryMetadata: testhelper.GetStoryMetadata(),
 	Content:       getStoryContent(),
 }
 
@@ -101,7 +103,7 @@ func TestCreateStoryFromURL(t *testing.T) {
 	engine.POST(route, storyController.CreateStoryFromURL)
 
 	// Requests
-	badRequestBody := "junk"
+	badRequestBody := junkId
 	jsonBadRequest, _ := json.Marshal(badRequestBody)
 	badRequest, _ := http.NewRequest(http.MethodPost, route, bytes.NewReader(jsonBadRequest))
 
@@ -116,7 +118,7 @@ func TestCreateStoryFromURL(t *testing.T) {
 
 	notFoundGutenbergRequestBody := models.StoryFromURLRequest{
 		Tags:    []string{"realisticFiction"},
-		Title:   "junk",
+		Title:   junkId,
 		UrlType: enums.Gutenberg,
 		Url:     "https://www.gutenberg.org/cache/epub/67138/pg67138.txt",
 	}
@@ -134,7 +136,7 @@ func TestCreateStoryFromURL(t *testing.T) {
 
 	notFoundWikipediaRequestBody := models.StoryFromURLRequest{
 		Tags:    []string{"superhero"},
-		Title:   "junk",
+		Title:   junkId,
 		UrlType: enums.Wikipedia,
 		Url:     "https://en.wikipedia.org/wiki/Superman",
 	}
@@ -206,7 +208,7 @@ func TestCreateStoryFromURL(t *testing.T) {
 func TestGetStoryById(t *testing.T) {
 	// Constants
 	route := "/story/storyId/"
-	storyId := 1
+	actualStoryId := storyId
 
 	//Mocks
 	storyController := StoryControllerImpl{
@@ -216,9 +218,9 @@ func TestGetStoryById(t *testing.T) {
 	engine.GET(route+":id", storyController.GetStoryById)
 
 	// Requests & responses
-	getStoryByIdRequest, _ := http.NewRequest(http.MethodGet, route+strconv.Itoa(storyId), nil)
-	notFoundGetStoryByIdRequest, _ := http.NewRequest(http.MethodGet, route+strconv.Itoa(0), nil)
-	invalidIdGetStoryByIdRequest, _ := http.NewRequest(http.MethodGet, route+"invalidId", nil)
+	getStoryByIdRequest, _ := http.NewRequest(http.MethodGet, route+actualStoryId, nil)
+	notFoundGetStoryByIdRequest, _ := http.NewRequest(http.MethodGet, route+notFoundId, nil)
+	invalidIdGetStoryByIdRequest, _ := http.NewRequest(http.MethodGet, route+junkId, nil)
 
 	okResponse, _ := json.Marshal(story)
 	notFoundResponse, _ := json.Marshal(enums.ErrorStoryNotFound)
@@ -267,7 +269,7 @@ func TestGetStoryById(t *testing.T) {
 func TestDeleteStory(t *testing.T) {
 	// Constants
 	route := "/story/storyId/"
-	storyId := 1
+	actualStoryId := storyId
 
 	//Mocks
 	storyController := StoryControllerImpl{
@@ -277,9 +279,9 @@ func TestDeleteStory(t *testing.T) {
 	engine.DELETE(route+":id", storyController.DeleteStory)
 
 	// Requests & responses
-	deleteStoryByIdRequest, _ := http.NewRequest(http.MethodDelete, route+strconv.Itoa(storyId), nil)
-	notFoundDeleteRequest, _ := http.NewRequest(http.MethodDelete, route+strconv.Itoa(0), nil)
-	invalidDeleteRequest, _ := http.NewRequest(http.MethodDelete, route+"junk", nil)
+	deleteStoryByIdRequest, _ := http.NewRequest(http.MethodDelete, route+actualStoryId, nil)
+	notFoundDeleteRequest, _ := http.NewRequest(http.MethodDelete, route+notFoundId, nil)
+	invalidDeleteRequest, _ := http.NewRequest(http.MethodDelete, route+junkId, nil)
 
 	notFoundResponse, _ := json.Marshal(enums.ErrorStoryNotFound)
 	invalidIdResponse, _ := json.Marshal(enums.ErrorInvalidStoryId)
@@ -328,7 +330,7 @@ func TestDeleteStory(t *testing.T) {
 func TestGetStoriesByAuthor(t *testing.T) {
 	// Constants
 	route := "/story/authors/"
-	authorId := 1
+	authorId := "authorId"
 
 	//Mocks
 	storyController := StoryControllerImpl{
@@ -338,9 +340,9 @@ func TestGetStoriesByAuthor(t *testing.T) {
 	engine.GET(route+":authorId", storyController.GetStoriesByAuthor)
 
 	// Requests & responses
-	getStoriesByAuthorRequest, _ := http.NewRequest(http.MethodGet, route+strconv.Itoa(authorId), nil)
-	notFoundGetStoriesByAuthorIdRequest, _ := http.NewRequest(http.MethodGet, route+strconv.Itoa(0), nil)
-	invalidIdGetStoriesByAuthorIdRequest, _ := http.NewRequest(http.MethodGet, route+"invalidId", nil)
+	getStoriesByAuthorRequest, _ := http.NewRequest(http.MethodGet, route+authorId, nil)
+	notFoundGetStoriesByAuthorIdRequest, _ := http.NewRequest(http.MethodGet, route+notFoundId, nil)
+	invalidIdGetStoriesByAuthorIdRequest, _ := http.NewRequest(http.MethodGet, route+junkId, nil)
 
 	multipleStoriesResponse, _ := json.Marshal([]models.Story{story})
 	notFoundResponse, _ := json.Marshal(enums.ErrorAuthorNotFound)
@@ -366,7 +368,7 @@ func TestGetStoriesByAuthor(t *testing.T) {
 			request:              invalidIdGetStoriesByAuthorIdRequest,
 			expectedResponseCode: http.StatusBadRequest,
 			expectedResponseBody: []byte(invalidIdResponse),
-			testMessage:          "Database not available for StoryController.GetStoriesByAuthor",
+			testMessage:          "Invalid ID for StoryController.GetStoriesByAuthor",
 		},
 	}
 
@@ -440,7 +442,7 @@ func TestGetStoriesByTag(t *testing.T) {
 // StorySvc stubs
 type MockStoryService struct{}
 
-func (r *MockStoryService) GetStoryById(ID uint64) (*models.Story, error) {
+func (r *MockStoryService) GetStoryById(ID string) (*models.Story, error) {
 	if ID == storyId {
 		return &story, nil
 	} else {
@@ -449,7 +451,7 @@ func (r *MockStoryService) GetStoryById(ID uint64) (*models.Story, error) {
 }
 
 func (r *MockStoryService) CreateStory(storyRequest *models.StoryFromURLRequest) (*models.Story, error) {
-	if storyRequest.Title == "junk" {
+	if storyRequest.Title == junkId {
 		return nil, errors.New(enums.ErrorURLNotFound)
 	}
 	return &story, nil
@@ -459,7 +461,7 @@ func (r *MockStoryService) GetStoryByRandom() (*models.Story, error) {
 	return &story, nil
 }
 
-func (r *MockStoryService) DeleteById(ID uint64) error {
+func (r *MockStoryService) DeleteById(ID string) error {
 	if ID != storyId {
 		return errors.New(enums.ErrorStoryNotFound)
 	}
@@ -474,8 +476,8 @@ func (r *MockStoryService) GetStoriesByTag(tag string) (*[]models.Story, error) 
 	return nil, errors.New(enums.ErrorTagNotFound)
 }
 
-func (r *MockStoryService) GetStoriesByAuthorId(authorId uint64) (*[]models.Story, error) {
-	if authorId == 1 {
+func (r *MockStoryService) GetStoriesByAuthorId(authorId string) (*[]models.Story, error) {
+	if authorId == "authorId" {
 		stories := []models.Story{story}
 		return &stories, nil
 	}
