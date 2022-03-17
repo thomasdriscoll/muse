@@ -1,6 +1,6 @@
 package services
 
-type Scrapper struct{}
+type Scrapper interface{}
 
 func WikiScrape(url string) []byte {
 	return nil

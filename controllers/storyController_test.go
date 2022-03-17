@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -23,21 +22,7 @@ var notFoundId string = "s3Bucket-notfound"
 
 var story = models.Story{
 	StoryMetadata: testhelper.GetStoryMetadata(),
-	Content:       getStoryContent(),
-}
-
-func getStoryContent() []byte {
-	path, pathErr := testhelper.GetTextFilePath()
-	if pathErr != nil {
-		panic(pathErr.Error())
-	}
-	content, err := os.ReadFile(path)
-	if err != nil {
-		jsonContent, _ := json.Marshal(content)
-		return jsonContent
-	} else {
-		panic(errors.New("whoopsie goof, you messed up good on the testdata"))
-	}
+	Content:       testhelper.GetStoryContent(),
 }
 
 type TestCase struct {
@@ -439,7 +424,10 @@ func TestGetStoriesByTag(t *testing.T) {
 	}
 }
 
-// StorySvc stubs
+// *************************************************************************************************************
+// 				MOCKS
+// *************************************************************************************************************
+
 type MockStoryService struct{}
 
 func (r *MockStoryService) GetStoryById(ID string) (*models.Story, error) {
