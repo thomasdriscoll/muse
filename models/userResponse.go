@@ -1,6 +1,6 @@
 package models
 
 type UserResponse struct {
-	status int32
-	data   User
+	Status int32
+	Data   User
 }

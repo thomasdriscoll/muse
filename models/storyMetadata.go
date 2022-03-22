@@ -3,23 +3,24 @@ package models
 import "time"
 
 type StoryMetadata struct {
-	author      string
-	authorId    string
-	dateCreated time.Time
-	dateUpdated time.Time
-	description string
-	likes       uint64
-	source      string
-	sourceType  string
-	storyId     string
-	storyTitle  string
-	tags        []string
-	views       uint64
+	Author      string
+	AuthorId    string
+	DateCreated time.Time
+	DateUpdated time.Time
+	Description string
+	Likes       uint64
+	Source      string
+	SourceType  string
+	StoryId     string
+	StoryTitle  string
+	Tags        []string
+	Views       uint64
+	WordCount   uint64
 }
 
 func (smd *StoryMetadata) UpdateTime() time.Time {
-	smd.dateUpdated = time.Now()
-	return smd.dateUpdated
+	smd.DateUpdated = time.Now()
+	return smd.DateUpdated
 }
 
 /* func (smd *StoryMetadata) CreatedTimeByDayMonthYear(day, month, year int) time.Time {

@@ -10,6 +10,10 @@ import (
 	"github.com/thomasdriscoll/muse/models"
 )
 
+func GetStoryMetadata() models.StoryMetadata {
+	return models.StoryMetadata{}
+}
+
 func GetStoryContent() []byte {
 	path, pathErr := GetTextFilePath()
 	if pathErr != nil {
@@ -33,8 +37,4 @@ func GetTextFilePath() (string, error) {
 	path := path.Join(path.Dir(filename), "..", "testdata", "simpleTextFile.txt")
 
 	return path, nil
-}
-
-func GetStoryMetadata() models.StoryMetadata {
-	return models.StoryMetadata{}
 }
