@@ -1,9 +1,6 @@
 package services
 
 import (
-	"errors"
-
-	"github.com/thomasdriscoll/muse/enums"
 	"github.com/thomasdriscoll/muse/models"
 	"github.com/thomasdriscoll/muse/repositories"
 )
@@ -26,12 +23,15 @@ func (s *StoryServiceImpl) GetStoryById(ID string) (*models.Story, error) {
 	storyMetadataFromID, err := s.StoryMetadataRepo.GetStoryById(ID)
 	if err != nil {
 		// Add logger statement here
-		return nil, errors.New(enums.ErrorStoryNotFound)
+		return nil, err
 	}
-
+	storyContent, err := s.Scrapper.Scrape(storyMetadataFromID.Source, storyMetadataFromID.SourceType)
+	if err != nil {
+		return nil, err
+	}
 	storyFromID := models.Story{
 		StoryMetadata: *storyMetadataFromID,
-		Content:       []byte{},
+		Content:       storyContent,
 	}
 	return &storyFromID, nil
 }

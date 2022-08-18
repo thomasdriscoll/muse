@@ -14,6 +14,12 @@ func GetStoryMetadata() models.StoryMetadata {
 	return models.StoryMetadata{}
 }
 
+func GetBadStoryMetadata() models.StoryMetadata {
+	return models.StoryMetadata{
+		Source: "badSource",
+	}
+}
+
 func GetStoryContent() []byte {
 	path, pathErr := GetTextFilePath()
 	if pathErr != nil {

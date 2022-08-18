@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -54,10 +55,10 @@ func TestGetStoryById(t *testing.T) {
 			err:           errors.New(enums.ErrorStoryNotFound),
 		},
 		{
-			testMessage:   "Bad request path for StoryService.GetStoryById",
+			testMessage:   "Bad content request for StoryService.GetStoryById",
 			id:            badId,
 			expectedStory: nil,
-			err:           errors.New(enums.ErrorInvalidStoryId),
+			err:           errors.New(enums.ErrorStoryContentInvalid),
 		},
 	}
 
@@ -65,9 +66,13 @@ func TestGetStoryById(t *testing.T) {
 		t.Run(testCase.testMessage, func(t *testing.T) {
 			story, err := storyService.GetStoryById(testCase.id)
 			if reflect.DeepEqual(*testCase.expectedStory, *story) {
+				fmt.Println(string(testCase.expectedStory.Content))
+				fmt.Println(string(story.Content))
 				t.Errorf("Expected story does not match actual story in GetStoryById")
 			}
 			if testCase.err != err {
+				fmt.Println(err)
+				fmt.Println(testCase.err)
 				t.Errorf("Expected error does not match actual error in GetStoryById")
 			}
 		})
@@ -184,11 +189,22 @@ func TestGetStoriesByTag(t *testing.T) {
 
 type MockScrapper struct{}
 
+func (ms *MockScrapper) Scrape(source string, sourceType string) ([]byte, error) {
+	if source == testhelper.GetBadStoryMetadata().Source {
+		return nil, errors.New(enums.ErrorStoryContentInvalid)
+	}
+
+	return testhelper.GetStoryContent(), nil
+}
+
 type MockStoryMetadataRepo struct{}
 
 func (mr *MockStoryMetadataRepo) GetStoryById(ID string) (*models.StoryMetadata, error) {
 	if ID == storyId {
 		metadata := testhelper.GetStoryMetadata()
+		return &metadata, nil
+	} else if ID == badId {
+		metadata := testhelper.GetBadStoryMetadata()
 		return &metadata, nil
 	}
 	return nil, errors.New(enums.ErrorStoryNotFound)
